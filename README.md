@@ -379,7 +379,7 @@ claude-code-video-toolkit/
 │   │   └── render.ts        # Remotion render + dependency install
 │   │
 │   ├── components/          # React components for video
-│   │   ├── scenes/          # 14 scene type components
+│   │   ├── scenes/          # 13 scene type components
 │   │   ├── AnimatedBackground.tsx  # 4 background variants
 │   │   ├── Vignette.tsx     # Edge darkening overlay
 │   │   ├── FilmGrain.tsx    # Cinematic grain effect

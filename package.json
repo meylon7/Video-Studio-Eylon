@@ -1,7 +1,7 @@
 {
-  "name": "digitalsamba",
+  "name": "studio-eylon-video-toolkit",
   "version": "1.0.0",
-  "description": "[![GitHub release](https://img.shields.io/github/v/release/digitalsamba/claude-code-video-toolkit)](https://github.com/digitalsamba/claude-code-video-toolkit/releases)",
+  "description": "AI-powered video creation toolkit with Web UI, 13 scene types, RTL support, and config-driven pipeline",
   "main": "index.js",
   "directories": {
     "doc": "docs",
@@ -11,9 +11,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["video", "remotion", "ai", "rtl", "hebrew"],
+  "author": "Studio Eylon <https://www.meylon.co.il>",
+  "license": "AGPL-3.0-only",
   "type": "commonjs",
   "devDependencies": {
     "@types/node": "^25.5.2",
