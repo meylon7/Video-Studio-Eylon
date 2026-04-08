@@ -1,0 +1,96 @@
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# Build outputs
+dist/
+build/
+out/
+*.mp4
+*.webm
+*.gif
+*.mov
+
+# Remotion
+.remotion/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Voice samples (may contain personal audio)
+assets/voices/*.mp3
+assets/voices/*.wav
+assets/voices/*.m4a
+
+# Projects directory (user's local video work - not part of toolkit)
+projects/
+
+# Keep directory structure
+!projects/.gitkeep
+
+# Examples directory IS tracked (curated showcase projects)
+!examples/
+
+# But ignore large media files in examples
+examples/*/public/demos/*.mp4
+examples/*/public/audio/*.mp3
+examples/*/node_modules/
+examples/*/.remotion/
+examples/*/out/
+
+# User uploads
+app/uploads/
+app/previews/
+
+# Playwright recordings (can be large)
+playwright/output/*.mp4
+playwright/recordings/*.mp4
+.ai_dev/

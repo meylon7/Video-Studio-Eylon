@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Studio Eylon — Video Generator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Inter, system-ui, sans-serif; background: #020617; color: #e2e8f0; }
+
+    /* Top bar */
+    .topbar { padding: 16px 40px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 16px; background: #0f172a; }
+    .topbar h1 { font-size: 20px; font-weight: 700; }
+    .topbar .ver { background: #ea580c20; color: #ea580c; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; }
+    .topbar .spacer { flex: 1; }
+    .topbar .status { font-size: 13px; color: #64748b; }
+
+    /* Form area — horizontal accordion */
+    .form-area { background: #0f172a; border-bottom: 1px solid #1e293b; }
+    .form-tabs { display: flex; border-bottom: 1px solid #1e293b; padding: 0 40px; gap: 0; overflow-x: auto; }
+    .form-tab {
+      padding: 12px 20px; cursor: pointer; font-size: 13px; font-weight: 500;
+      color: #64748b; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s;
+    }
+    .form-tab:hover { color: #94a3b8; }
+    .form-tab.active { color: #ea580c; border-bottom-color: #ea580c; }
+    .form-panels { padding: 24px 40px; }
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+
+    /* Form layout */
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    .form-wide { grid-column: 1 / -1; }
+    label { display: flex; align-items: center; font-size: 12px; color: #94a3b8; margin-bottom: 5px; font-weight: 500; gap: 4px; }
+    input, select, textarea {
+      width: 100%; padding: 9px 12px; background: #020617; border: 1px solid #1e293b;
+      border-radius: 7px; color: #e2e8f0; font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.15s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #ea580c; }
+    textarea { resize: vertical; min-height: 50px; }
+    .field { margin-bottom: 0; }
+
+    /* Toggle */
+    .toggle { display: flex; align-items: center; gap: 8px; }
+    .toggle input[type="checkbox"] { width: 18px; height: 18px; accent-color: #ea580c; }
+    .toggle label { margin: 0; font-size: 13px; }
+
+    /* Buttons */
+    .btn { padding: 9px 18px; border-radius: 7px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; transition: all 0.15s; }
+    .btn-primary { background: #ea580c; color: #fff; }
+    .btn-primary:hover { background: #c2410c; }
+    .btn-primary:disabled { background: #4a2410; color: #a0644a; cursor: not-allowed; }
+    .btn-secondary { background: #1e293b; color: #94a3b8; }
+    .btn-secondary:hover { background: #334155; color: #e2e8f0; }
+    .btn-sm { padding: 5px 10px; font-size: 11px; }
+    .btn-danger { background: #7f1d1d; color: #fca5a5; }
+    .btn-danger:hover { background: #991b1b; }
+
+    /* Scene cards in form */
+    .scenes-row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+    .scene-card {
+      background: #020617; border: 1px solid #1e293b; border-radius: 10px;
+      padding: 14px; min-width: 280px; max-width: 320px; flex-shrink: 0; position: relative;
+    }
+    .scene-card:hover { border-color: #334155; }
+    .scene-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .scene-type { font-size: 11px; font-weight: 600; color: #ea580c; text-transform: uppercase; letter-spacing: 0.5px; }
+    .remove-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 16px; opacity: 0.5; }
+    .remove-btn:hover { opacity: 1; }
+    .add-scene-btns { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 8px; }
+
+    /* Upload area */
+    .upload-zone {
+      border: 2px dashed #1e293b; border-radius: 10px; padding: 20px; text-align: center;
+      cursor: pointer; transition: all 0.2s; color: #475569; font-size: 13px;
+    }
+    .upload-zone:hover { border-color: #ea580c; color: #ea580c; }
+    .upload-zone.dragover { border-color: #ea580c; background: #ea580c08; }
+    .uploaded-files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .uploaded-file {
+      display: flex; align-items: center; gap: 6px; background: #1e293b; border-radius: 6px;
+      padding: 4px 10px; font-size: 12px; color: #94a3b8;
+    }
+    .uploaded-file .remove { cursor: pointer; color: #ef4444; margin-right: -4px; }
+    .uploaded-thumb { width: 48px; height: 36px; object-fit: cover; border-radius: 4px; }
+
+    /* Generate bar */
+    .generate-bar {
+      padding: 12px 40px; background: #0f172a; border-bottom: 1px solid #1e293b;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .progress-text { font-size: 13px; color: #94a3b8; flex: 1; }
+    .spinner { width: 16px; height: 16px; border: 2px solid #1e293b; border-top-color: #ea580c; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Gallery */
+    .gallery-area { padding: 30px 40px; }
+    .gallery-title { font-size: 15px; font-weight: 600; color: #64748b; margin-bottom: 16px; }
+    .gallery-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;
+    }
+    .gallery-card {
+      background: #0f172a; border: 1px solid #1e293b; border-radius: 10px;
+      overflow: hidden; cursor: pointer; transition: all 0.2s;
+    }
+    .gallery-card:hover { border-color: #ea580c; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .gallery-card video { width: 100%; height: 160px; object-fit: cover; background: #000; display: block; }
+    .gallery-card .card-body { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+    .gallery-card .card-info { flex: 1; min-width: 0; }
+    .gallery-card .card-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .gallery-card .card-meta { font-size: 11px; color: #64748b; margin-top: 3px; }
+    .gallery-card .delete-btn { background: none; border: none; color: #64748b; font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
+    .gallery-card .delete-btn:hover { color: #ef4444; background: rgba(239,68,68,0.15); }
+    .gallery-card.playing { border-color: #ea580c; }
+
+    /* Video player overlay */
+    .player-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      z-index: 1000; justify-content: center; align-items: center; flex-direction: column; gap: 16px;
+    }
+    .player-overlay.open { display: flex; }
+    .player-overlay video { max-width: 90vw; max-height: 75vh; border-radius: 12px; }
+    .player-overlay .close-btn {
+      position: absolute; top: 20px; left: 20px; background: none; border: none;
+      color: #fff; font-size: 32px; cursor: pointer; opacity: 0.7;
+    }
+    .player-overlay .close-btn:hover { opacity: 1; }
+    .player-overlay .dl-link { color: #ea580c; font-size: 14px; text-decoration: none; }
+    .player-overlay .dl-link:hover { text-decoration: underline; }
+
+    /* Tooltip */
+    .tip { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; background: #1e293b; color: #64748b; font-size: 9px; font-weight: 700; cursor: help; position: relative; border: 1px solid #334155; flex-shrink: 0; }
+    .tip:hover { background: #ea580c; color: #fff; border-color: #ea580c; }
+    .tip .tt { display: none; position: fixed; background: #1e293b; color: #e2e8f0; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 400; z-index: 9999; border: 1px solid #334155; box-shadow: 0 8px 30px rgba(0,0,0,0.5); pointer-events: none; line-height: 1.5; width: 260px; white-space: normal; }
+    .tip .tt.show { display: block; }
+
+    .empty-gallery { text-align: center; padding: 60px 20px; color: #1e293b; }
+    .empty-gallery .icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-gallery .text { font-size: 16px; color: #334155; }
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <h1>Studio Eylon</h1>
+  <span class="ver">Video Generator</span>
+  <div class="spacer"></div>
+  <div class="status" id="topStatus"></div>
+</div>
+
+<!-- Form tabs -->
+<div class="form-area">
+  <div class="form-tabs">
+    <div class="form-tab active" onclick="showTab('project')">Project</div>
+    <div class="form-tab" onclick="showTab('visual')">Visual</div>
+    <div class="form-tab" onclick="showTab('audio')">Audio</div>
+    <div class="form-tab" onclick="showTab('scenes')">Scenes</div>
+    <div class="form-tab" onclick="showTab('media')">Media &amp; Assets</div>
+  </div>
+
+  <div class="form-panels">
+
+    <!-- PROJECT -->
+    <div class="form-panel active" id="panel-project">
+      <div class="form-grid">
+        <div class="field">
+          <label><span class="tip" data-tip="Unique project folder name">?</span> Project Name</label>
+          <input type="text" id="projectName" placeholder="my-video" />
+        </div>
+        <div class="field">
+          <label><span class="tip" data-tip="Brand profile: colors, fonts, logo">?</span> Brand</label>
+          <select id="brand"><option value="digital-samba">Studio Eylon</option><option value="default">Default</option></select>
+        </div>
+        <div class="field">
+          <label><span class="tip" data-tip="Template type for default scene structure">?</span> Type</label>
+          <select id="videoType">
+            <option value="product-demo">Product Demo</option>
+            <option value="spotlight">Spotlight</option>
+            <option value="comparison">Comparison</option>
+            <option value="testimonial">Testimonial</option>
+            <option value="infographic">Infographic</option>
+            <option value="webinar">Webinar</option>
+          </select>
+        </div>
+        <div class="field">
+          <label><span class="tip" data-tip="Product name shown in titles and watermark">?</span> Product Name</label>
+          <input type="text" id="productName" value="Studio Eylon" />
+        </div>
+        <div class="field">
+          <label><span class="tip" data-tip="Subtitle under the product name in opening">?</span> Tagline</label>
+          <input type="text" id="productTagline" placeholder="Your tagline" />
+        </div>
+        <div class="field">
+          <label><span class="tip" data-tip="URL shown in CTA scene">?</span> Website</label>
+          <input type="text" id="productWebsite" placeholder="studioeylon.com" />
+        </div>
+      </div>
+    </div>
+
+    <!-- VISUAL -->
+    <div class="form-panel" id="panel-visual">
+      <div class="form-grid">
+        <div class="field">
+          <label><span class="tip" data-tip="RTL for Hebrew/Arabic — flips layout direction">?</span> Text Direction</label>
+          <select id="textDirection">
+            <option value="ltr">LTR (English)</option>
+            <option value="rtl">RTL (Hebrew / Arabic)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label><span class="tip" data-tip="Dark = floating shapes. Tech = grid. Warm = soft tones. Subtle = minimal.">?</span> Background</label>
+          <select id="background">
+            <option value="dark">Dark</option>
+            <option value="tech">Tech</option>
+            <option value="warm">Warm</option>
+            <option value="subtle">Subtle</option>
+          </select>
+        </div>
+        <div class="field">
+          <label><span class="tip" data-tip="Effect between scenes. Fade = smooth. Glitch = digital. Zoom = cinematic.">?</span> Transition</label>
+          <select id="transition">
+            <option value="fade">Fade</option><option value="slide">Slide</option><option value="wipe">Wipe</option>
+            <option value="zoom-blur">Zoom Blur</option><option value="glitch">Glitch</option><option value="rgb-split">RGB Split</option>
+            <option value="light-leak">Light Leak</option><option value="pixelate">Pixelate</option><option value="none">None</option>
+          </select>
+        </div>
+        <div class="field">
+          <label><span class="tip" data-tip="How fast elements animate in">?</span> Speed</label>
+          <select id="animSpeed"><option value="slow">Slow</option><option value="normal" selected>Normal</option><option value="fast">Fast</option></select>
+        </div>
+        <div class="field">
+          <label><span class="tip" data-tip="Output dimensions. HD = web. Vertical = Reels/TikTok. Square = Instagram.">?</span> Resolution</label>
+          <select id="resolution">
+            <option value="1920x1080">1920x1080 (HD)</option>
+            <option value="1080x1920">1080x1920 (Vertical)</option>
+            <option value="1080x1080">1080x1080 (Square)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Overlays</label>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px;">
+            <div class="toggle"><input type="checkbox" id="vignetteEnabled" checked /><label for="vignetteEnabled">Vignette</label></div>
+            <div class="toggle"><input type="checkbox" id="grainEnabled" /><label for="grainEnabled">Film Grain</label></div>
+            <div class="toggle"><input type="checkbox" id="watermarkEnabled" checked /><label for="watermarkEnabled">Logo Watermark</label></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUDIO -->
+    <div class="form-panel" id="panel-audio">
+      <div class="form-grid">
+        <div class="field">
+          <div class="toggle"><input type="checkbox" id="voiceoverEnabled" checked /><label for="voiceoverEnabled"><span class="tip" data-tip="AI narration using Microsoft Edge TTS. Free, no API key.">?</span> Voiceover</label></div>
+        </div>
+        <div class="field">
+          <label><span class="tip" data-tip="Click ▶ to preview before choosing">?</span> Voice</label>
+          <div style="display:flex;gap:6px;">
+            <select id="voice" style="flex:1;">
+              <optgroup label="English - Male">
+                <option value="en-GB-RyanNeural">Ryan (British)</option>
+                <option value="en-US-GuyNeural">Guy (American)</option>
+                <option value="en-US-AndrewNeural">Andrew (American)</option>
+                <option value="en-AU-WilliamNeural">William (Australian)</option>
+                <option value="en-IE-ConnorNeural">Connor (Irish)</option>
+              </optgroup>
+              <optgroup label="English - Female">
+                <option value="en-US-JennyNeural">Jenny (American)</option>
+                <option value="en-GB-SoniaNeural">Sonia (British)</option>
+                <option value="en-US-AriaNeural">Aria (American)</option>
+                <option value="en-AU-NatashaNeural">Natasha (Australian)</option>
+              </optgroup>
+              <optgroup label="Hebrew"><option value="he-IL-AvriNeural">Avri (Male)</option><option value="he-IL-HilaNeural">Hila (Female)</option></optgroup>
+              <optgroup label="Spanish"><option value="es-ES-AlvaroNeural">Alvaro</option><option value="es-MX-DaliaNeural">Dalia</option></optgroup>
+              <optgroup label="French"><option value="fr-FR-HenriNeural">Henri</option><option value="fr-FR-DeniseNeural">Denise</option></optgroup>
+              <optgroup label="German"><option value="de-DE-ConradNeural">Conrad</option><option value="de-DE-KatjaNeural">Katja</option></optgroup>
+              <optgroup label="Arabic"><option value="ar-SA-HamedNeural">Hamed</option><option value="ar-SA-ZariyahNeural">Zariyah</option></optgroup>
+              <optgroup label="Japanese"><option value="ja-JP-KeitaNeural">Keita</option><option value="ja-JP-NanamiNeural">Nanami</option></optgroup>
+              <optgroup label="Chinese"><option value="zh-CN-YunxiNeural">Yunxi</option><option value="zh-CN-XiaoxiaoNeural">Xiaoxiao</option></optgroup>
+              <optgroup label="Russian"><option value="ru-RU-DmitryNeural">Dmitry</option><option value="ru-RU-SvetlanaNeural">Svetlana</option></optgroup>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="previewVoice()" title="Preview voice">&#9654;</button>
+          </div>
+          <audio id="voicePreviewAudio" style="display:none;"></audio>
+        </div>
+        <div class="field">
+          <label><span class="tip" data-tip="Speaking pace">?</span> Speed</label>
+          <select id="voiceRate"><option value="-15%">Slow</option><option value="-5%" selected>Natural</option><option value="+5%">Fast</option></select>
+        </div>
+        <div class="field">
+          <div class="toggle"><input type="checkbox" id="musicEnabled" checked /><label for="musicEnabled"><span class="tip" data-tip="Ambient synth background track">?</span> Music</label></div>
+        </div>
+        <div class="field">
+          <label>Volume</label>
+          <input type="range" id="musicVolume" min="0" max="0.4" step="0.02" value="0.1" style="padding:0;" />
+        </div>
+        <div class="field">
+          <div class="toggle"><input type="checkbox" id="sfxEnabled" checked /><label for="sfxEnabled"><span class="tip" data-tip="Whoosh, click, boom at transitions">?</span> SFX</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENES -->
+    <div class="form-panel" id="panel-scenes">
+      <div class="scenes-row" id="scenesContainer"></div>
+      <div class="add-scene-btns">
+        <button class="btn btn-secondary btn-sm" onclick="addScene('title')">+ Title</button>
+        <button class="btn btn-secondary btn-sm" onclick="addScene('problem')">+ Problem</button>
+        <button class="btn btn-secondary btn-sm" onclick="addScene('solution')">+ Solution</button>
+        <button class="btn btn-secondary btn-sm" onclick="addScene('stats')">+ Stats</button>
+        <button class="btn btn-secondary btn-sm" onclick="addScene('cta')">+ CTA</button>
+        <button class="btn btn-secondary btn-sm" onclick="addScene('spotlight')">+ Spotlight</button>
+        <button class="btn btn-secondary btn-sm" onclick="addScene('comparison')">+ Comparison</button>
+        <button class="btn btn-secondary btn-sm" onclick="addScene('testimonial')">+ Testimonial</button>
+        <button class="btn btn-secondary btn-sm" onclick="addScene('demo')">+ Demo</button>
+        <button class="btn btn-secondary btn-sm" onclick="addScene('image')">+ Image</button>
+      </div>
+    </div>
+
+    <!-- MEDIA -->
+    <div class="form-panel" id="panel-media">
+      <div class="form-grid">
+        <div class="field">
+          <label><span class="tip" data-tip="Brand logo. Shown in title scene and watermark. PNG/SVG recommended.">?</span> Logo</label>
+          <div class="upload-zone" id="logoUpload" onclick="document.getElementById('logoFile').click()">
+            Drop logo here or click to browse
+          </div>
+          <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="handleUpload('logo', this)" />
+          <div class="uploaded-files" id="logoPreview"></div>
+        </div>
+        <div class="field">
+          <label><span class="tip" data-tip="Background images or product screenshots. Used in demo scenes.">?</span> Images</label>
+          <div class="upload-zone" id="imagesUpload" onclick="document.getElementById('imagesFile').click()">
+            Drop images here or click to browse
+          </div>
+          <input type="file" id="imagesFile" accept="image/*" multiple style="display:none" onchange="handleUpload('images', this)" />
+          <div class="uploaded-files" id="imagesPreview"></div>
+        </div>
+        <div class="field form-wide">
+          <label><span class="tip" data-tip="Video clips (screen recordings, demos, B-roll). Used in demo scenes. MP4/WebM.">?</span> Video Clips</label>
+          <div class="upload-zone" id="videosUpload" onclick="document.getElementById('videosFile').click()">
+            Drop video clips here or click to browse
+          </div>
+          <input type="file" id="videosFile" accept="video/*" multiple style="display:none" onchange="handleUpload('videos', this)" />
+          <div class="uploaded-files" id="videosPreview"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Generate bar -->
+<div class="generate-bar">
+  <button class="btn btn-primary" id="generateBtn" onclick="generate()" style="padding:10px 32px;">Generate Video</button>
+  <div id="progressArea" style="display:none;display:flex;align-items:center;gap:10px;">
+    <div class="spinner" id="genSpinner"></div>
+    <span class="progress-text" id="progressText">Starting...</span>
+  </div>
+</div>
+
+<!-- Gallery -->
+<div class="gallery-area">
+  <div class="gallery-title">Gallery</div>
+  <div class="gallery-grid" id="galleryGrid">
+    <div class="empty-gallery">
+      <div class="icon">🎬</div>
+      <div class="text">Your generated videos will appear here</div>
+    </div>
+  </div>
+</div>
+
+<!-- Video Player Overlay -->
+<div class="player-overlay" id="playerOverlay" onclick="if(event.target===this)closePlayer()">
+  <button class="close-btn" onclick="closePlayer()">&times;</button>
+  <video id="overlayVideo" controls></video>
+  <a class="dl-link" id="overlayDownload" href="#" download>Download MP4</a>
+</div>
+
+<script>
+const API = '';
+let scenes = [];
+let uploadedFiles = { logo: null, images: [], videos: [] };
+
+// ============================================
+// Tabs
+// ============================================
+function showTab(id) {
+  document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ============================================
+// Tooltips
+// ============================================
+document.addEventListener('mouseenter', (e) => {
+  const el = e.target.closest('.tip');
+  if (!el) return;
+  let tt = el.querySelector('.tt');
+  if (!tt) { tt = document.createElement('span'); tt.className = 'tt'; tt.textContent = el.dataset.tip; el.appendChild(tt); }
+  const r = el.getBoundingClientRect();
+  tt.classList.add('show');
+  let left = r.left - 270; let top = r.top + r.height/2 - tt.offsetHeight/2;
+  if (left < 8) { left = r.left; top = r.bottom + 8; }
+  if (top < 8) top = 8;
+  if (top + tt.offsetHeight > innerHeight - 8) top = innerHeight - tt.offsetHeight - 8;
+  tt.style.left = left + 'px'; tt.style.top = top + 'px';
+}, true);
+document.addEventListener('mouseleave', (e) => {
+  const el = e.target.closest('.tip'); if (!el) return;
+  const tt = el.querySelector('.tt'); if (tt) tt.classList.remove('show');
+}, true);
+
+// Auto RTL on Hebrew/Arabic voice
+document.getElementById('voice').addEventListener('change', function() {
+  if (this.value.startsWith('he-') || this.value.startsWith('ar-')) document.getElementById('textDirection').value = 'rtl';
+  else document.getElementById('textDirection').value = 'ltr';
+});
+
+// ============================================
+// Scenes
+// ============================================
+const SF = {
+  title: [
+    { k:'headline', l:'Headline', t:'text', p:'Main title', tip:'Big opening text' },
+    { k:'subheadline', l:'Subtitle', t:'text', p:'Optional subtitle' },
+    { k:'narration', l:'Narration', t:'ta', p:'Voiceover text', tip:'Spoken by AI voice' },
+    { k:'duration', l:'Sec', t:'num', v:5, tip:'Scene duration' },
+  ],
+  problem: [
+    { k:'headline', l:'Headline', t:'text', p:'Problem statement' },
+    { k:'bullets', l:'Problems', t:'ta', p:'One per line', tip:'Each gets an animated card' },
+    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
+    { k:'duration', l:'Sec', t:'num', v:7 },
+  ],
+  solution: [
+    { k:'headline', l:'Headline', t:'text', p:'Your solution' },
+    { k:'description', l:'Description', t:'text', p:'One line' },
+    { k:'highlights', l:'Highlights', t:'ta', p:'One per line', tip:'Animated cards' },
+    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
+    { k:'duration', l:'Sec', t:'num', v:6 },
+  ],
+  stats: [
+    { k:'headline', l:'Headline', t:'text', p:'Stats title' },
+    { k:'stats_raw', l:'Stats', t:'ta', p:'99% | Uptime\\n5 min | Setup', tip:'value | label per line' },
+    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
+    { k:'duration', l:'Sec', t:'num', v:7 },
+  ],
+  cta: [
+    { k:'headline', l:'Headline', t:'text', p:'Call to action' },
+    { k:'tagline', l:'Tagline', t:'text', p:'Supporting text' },
+    { k:'url', l:'URL', t:'text', p:'yoursite.com' },
+    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
+    { k:'duration', l:'Sec', t:'num', v:5 },
+  ],
+  spotlight: [
+    { k:'icon', l:'Icon', t:'text', p:'🎨', v:'🎨' },
+    { k:'feature', l:'Feature', t:'text', p:'Feature name' },
+    { k:'tagline', l:'Tagline', t:'text', p:'One line' },
+    { k:'bullets', l:'Points', t:'ta', p:'One per line' },
+    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
+    { k:'duration', l:'Sec', t:'num', v:15 },
+  ],
+  comparison: [
+    { k:'headline', l:'Headline', t:'text', p:'How we compare' },
+    { k:'rows_raw', l:'Rows', t:'ta', p:'Feature | Ours | Others', tip:'Use Yes/No for icons' },
+    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
+    { k:'duration', l:'Sec', t:'num', v:12 },
+  ],
+  testimonial: [
+    { k:'quote', l:'Quote', t:'ta', p:'Customer quote' },
+    { k:'author', l:'Author', t:'text', p:'Name' },
+    { k:'role', l:'Role', t:'text', p:'CTO' },
+    { k:'company', l:'Company', t:'text', p:'Acme Corp' },
+    { k:'rating', l:'Stars', t:'num', v:5 },
+    { k:'duration', l:'Sec', t:'num', v:10 },
+  ],
+  demo: [
+    { k:'label', l:'Title', t:'text', p:'Product Demo' },
+    { k:'demoType', l:'Type', t:'text', p:'browser / terminal / raw', v:'browser', tip:'Window chrome style' },
+    { k:'caption', l:'Caption', t:'text', p:'Description below video' },
+    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
+    { k:'duration', l:'Sec', t:'num', v:10, tip:'Upload video in Media tab' },
+  ],
+  image: [
+    { k:'headline', l:'Headline', t:'text', p:'Optional title' },
+    { k:'caption', l:'Caption', t:'text', p:'Optional caption' },
+    { k:'layout', l:'Layout', t:'text', p:'fullscreen / contain / split', v:'contain', tip:'How image is displayed' },
+    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
+    { k:'duration', l:'Sec', t:'num', v:6, tip:'Upload image in Media tab' },
+  ],
+};
+
+function addScene(type, data={}) { scenes.push({type, data}); renderScenes(); }
+function removeScene(i) { scenes.splice(i,1); renderScenes(); }
+
+function renderScenes() {
+  const c = document.getElementById('scenesContainer'); c.innerHTML = '';
+  scenes.forEach((s, idx) => {
+    const fields = SF[s.type] || [];
+    const card = document.createElement('div'); card.className = 'scene-card';
+    card.innerHTML = `<div class="scene-header"><span class="scene-type">${idx+1}. ${s.type}</span><button class="remove-btn" onclick="removeScene(${idx})">&times;</button></div>` +
+      fields.map(f => {
+        const val = s.data[f.k] ?? f.v ?? '';
+        const tipH = f.tip ? `<span class="tip" data-tip="${f.tip}">?</span> ` : '';
+        if (f.t === 'ta') return `<div class="field"><label>${tipH}${f.l}</label><textarea data-s="${idx}" data-k="${f.k}" placeholder="${f.p||''}" rows="2">${val}</textarea></div>`;
+        if (f.t === 'num') return `<div class="field"><label>${tipH}${f.l}</label><input type="number" data-s="${idx}" data-k="${f.k}" value="${val}" min="1" max="60"/></div>`;
+        return `<div class="field"><label>${tipH}${f.l}</label><input type="text" data-s="${idx}" data-k="${f.k}" value="${val}" placeholder="${f.p||''}"/></div>`;
+      }).join('');
+    c.appendChild(card);
+  });
+  c.querySelectorAll('input,textarea').forEach(el => {
+    el.addEventListener('input', e => { scenes[+e.target.dataset.s].data[e.target.dataset.k] = e.target.type==='number' ? +e.target.value : e.target.value; });
+  });
+}
+
+// Default scenes
+addScene('title', { headline: 'Your Title Here', subheadline: 'Subtitle goes here', narration: 'Welcome.', duration: 5 });
+addScene('problem', { headline: 'The Problem', bullets: 'Pain point 1\nPain point 2\nPain point 3', narration: 'Here is the problem.', duration: 6 });
+addScene('solution', { headline: 'The Solution', highlights: 'Benefit 1\nBenefit 2\nBenefit 3', narration: 'Here is the solution.', duration: 6 });
+addScene('cta', { headline: 'Get Started', url: 'studioeylon.com', narration: 'Get started today.', duration: 5 });
+
+// ============================================
+// File uploads
+// ============================================
+function handleUpload(type, input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result.split(',')[1]; // strip data:...;base64,
+      try {
+        const resp = await fetch(`${API}/api/upload-base64`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: file.name, data: base64, mime: file.type }),
+        });
+        const data = await resp.json();
+        if (type === 'logo') { uploadedFiles.logo = data.path; showUploadedFile('logoPreview', data, type); }
+        else if (type === 'images') { uploadedFiles.images.push(data.path); showUploadedFile('imagesPreview', data, type); }
+        else { uploadedFiles.videos.push(data.path); showUploadedFile('videosPreview', data, type); }
+      } catch (err) { console.error('Upload failed:', err); }
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function showUploadedFile(containerId, data, type) {
+  const c = document.getElementById(containerId);
+  const el = document.createElement('div'); el.className = 'uploaded-file';
+  if (data.thumbnail) el.innerHTML = `<img class="uploaded-thumb" src="${data.thumbnail}" /> `;
+  el.innerHTML += `${data.name} <span class="remove" onclick="this.parentElement.remove()">&times;</span>`;
+  c.appendChild(el);
+}
+
+// Drag & drop
+['logoUpload','imagesUpload','videosUpload'].forEach(id => {
+  const zone = document.getElementById(id);
+  if (!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    const type = id.replace('Upload','').replace('s','');
+    const input = zone.nextElementSibling;
+    input.files = e.dataTransfer.files;
+    handleUpload(id.includes('logo') ? 'logo' : id.includes('image') ? 'images' : 'videos', input);
+  });
+});
+
+// ============================================
+// Build config
+// ============================================
+function buildConfig() {
+  const res = document.getElementById('resolution').value.split('x');
+  return {
+    _projectName: document.getElementById('projectName').value || `video-${Date.now().toString(36)}`,
+    type: document.getElementById('videoType').value,
+    brand: document.getElementById('brand').value,
+    product: {
+      name: document.getElementById('productName').value,
+      tagline: document.getElementById('productTagline').value,
+      website: document.getElementById('productWebsite').value,
+      logo: uploadedFiles.logo || 'images/ds-logo.png',
+    },
+    scenes: scenes.map(s => {
+      const d = { ...s.data, type: s.type };
+      if (d.bullets && typeof d.bullets === 'string') d.bullets = d.bullets.split('\n').filter(Boolean);
+      if (d.highlights && typeof d.highlights === 'string') d.highlights = d.highlights.split('\n').filter(Boolean);
+      if (d.stats_raw) { d.stats = d.stats_raw.split('\n').filter(Boolean).map(l => { const [v,la] = l.split('|').map(s=>s.trim()); return {value:v||'',label:la||'',icon:''}; }); delete d.stats_raw; }
+      if (d.rows_raw) { d.rows = d.rows_raw.split('\n').filter(Boolean).map(l => { const p=l.split('|').map(s=>s.trim()); return {feature:p[0]||'',ours:p[1]==='Yes'?true:p[1]==='No'?false:p[1]||'',others:p[2]==='Yes'?true:p[2]==='No'?false:p[2]||''}; }); delete d.rows_raw; }
+      return d;
+    }),
+    visual: {
+      background: document.getElementById('background').value,
+      transition: { type: document.getElementById('transition').value, durationFrames: 15 },
+      animationSpeed: document.getElementById('animSpeed').value,
+      direction: document.getElementById('textDirection').value,
+    },
+    audio: {
+      voiceover: { enabled: document.getElementById('voiceoverEnabled').checked, voice: document.getElementById('voice').value, rate: document.getElementById('voiceRate').value },
+      music: { enabled: document.getElementById('musicEnabled').checked, volume: parseFloat(document.getElementById('musicVolume').value) },
+      sfx: { enabled: document.getElementById('sfxEnabled').checked },
+    },
+    overlays: {
+      vignette: document.getElementById('vignetteEnabled').checked,
+      filmGrain: document.getElementById('grainEnabled').checked,
+      logoWatermark: { enabled: document.getElementById('watermarkEnabled').checked, position: 'bottom-right' },
+    },
+    output: { width: parseInt(res[0]), height: parseInt(res[1]), fps: 30 },
+    _uploads: uploadedFiles,
+  };
+}
+
+// ============================================
+// Generate
+// ============================================
+async function generate() {
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  document.getElementById('progressArea').style.display = 'flex';
+  document.getElementById('genSpinner').style.display = 'block';
+  document.getElementById('progressText').textContent = 'Sending...';
+
+  try {
+    const config = buildConfig();
+    const resp = await fetch(`${API}/api/generate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config) });
+    const { jobId } = await resp.json();
+    pollStatus(jobId);
+  } catch (err) {
+    document.getElementById('progressText').textContent = 'Error: ' + err.message;
+    document.getElementById('genSpinner').style.display = 'none';
+    btn.disabled = false;
+  }
+}
+
+function pollStatus(jobId) {
+  const timer = setInterval(async () => {
+    try {
+      const r = await (await fetch(`${API}/api/status/${jobId}`)).json();
+      document.getElementById('progressText').textContent = r.progress;
+      if (r.status === 'done') {
+        clearInterval(timer);
+        document.getElementById('genSpinner').style.display = 'none';
+        document.getElementById('progressText').textContent = 'Done!';
+        document.getElementById('generateBtn').disabled = false;
+        loadGallery();
+        openPlayer(r.output);
+      } else if (r.status === 'error') {
+        clearInterval(timer);
+        document.getElementById('genSpinner').style.display = 'none';
+        document.getElementById('progressText').textContent = 'Error: ' + (r.error || '').slice(0, 200);
+        document.getElementById('generateBtn').disabled = false;
+      }
+    } catch {}
+  }, 2000);
+}
+
+// ============================================
+// Gallery
+// ============================================
+async function loadGallery() {
+  try {
+    const projects = await (await fetch(`${API}/api/projects`)).json();
+    const grid = document.getElementById('galleryGrid');
+    if (projects.length === 0) { grid.innerHTML = '<div class="empty-gallery"><div class="icon">🎬</div><div class="text">Your generated videos will appear here</div></div>'; return; }
+    grid.innerHTML = '';
+    projects.forEach(p => {
+      p.videos.forEach(v => {
+        const url = `/projects/${p.name}/remotion/out/${v}`;
+        const card = document.createElement('div'); card.className = 'gallery-card';
+        card.innerHTML = `<video src="${url}" preload="metadata" muted></video><div class="card-body"><div class="card-info"><div class="card-title">${v.replace('.mp4','')}</div><div class="card-meta">${p.name}</div></div><button class="delete-btn" title="Delete" data-project="${p.name}">&times;</button></div>`;
+        card.querySelector('video').onclick = () => openPlayer(url);
+        card.querySelector('.delete-btn').onclick = async (e) => {
+          e.stopPropagation();
+          if (!confirm(`Delete project "${p.name}"?`)) return;
+          try {
+            await fetch(`${API}/api/projects/${p.name}`, { method: 'DELETE' });
+            loadGallery();
+          } catch (err) { console.error(err); }
+        };
+        grid.appendChild(card);
+      });
+    });
+  } catch {}
+}
+
+// ============================================
+// Player overlay
+// ============================================
+function openPlayer(url) {
+  const o = document.getElementById('playerOverlay');
+  const v = document.getElementById('overlayVideo');
+  v.src = url; v.play();
+  document.getElementById('overlayDownload').href = url;
+  o.classList.add('open');
+}
+function closePlayer() {
+  document.getElementById('overlayVideo').pause();
+  document.getElementById('playerOverlay').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePlayer(); });
+
+// ============================================
+// Voice preview
+// ============================================
+async function previewVoice() {
+  const voice = document.getElementById('voice').value;
+  const rate = document.getElementById('voiceRate').value;
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    const r = await (await fetch(`${API}/api/preview-voice`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({voice, rate, text:'Hello, this is a preview of how this voice sounds. Welcome to Studio Eylon.'}) })).json();
+    if (r.url) { const a = document.getElementById('voicePreviewAudio'); a.src = r.url; a.play(); }
+  } catch(e) { console.error(e); }
+  btn.disabled = false; btn.textContent = '\u25B6';
+}
+
+// Init
+loadGallery();
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+name: Sync Remotion Official Skills
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Every Monday at 9am UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout toolkit
+        uses: actions/checkout@v4
+
+      - name: Clone upstream skills
+        run: |
+          git clone --depth 1 https://github.com/remotion-dev/skills.git /tmp/remotion-skills
+          UPSTREAM_SHA=$(git -C /tmp/remotion-skills rev-parse --short HEAD)
+          echo "UPSTREAM_SHA=$UPSTREAM_SHA" >> "$GITHUB_ENV"
+          echo "UPSTREAM_SHA_FULL=$(git -C /tmp/remotion-skills rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Check for changes
+        id: diff
+        run: |
+          # Copy upstream into temp location for comparison
+          rm -rf /tmp/upstream-copy
+          cp -r /tmp/remotion-skills/skills/remotion /tmp/upstream-copy
+
+          # Compare against our copy
+          if diff -rq .claude/skills/remotion-official /tmp/upstream-copy > /dev/null 2>&1; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No changes detected"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            CHANGED_COUNT=$(diff -rq .claude/skills/remotion-official /tmp/upstream-copy 2>/dev/null | wc -l | tr -d ' ')
+            echo "changed_count=$CHANGED_COUNT" >> "$GITHUB_OUTPUT"
+            echo "$CHANGED_COUNT file(s) changed"
+          fi
+
+      - name: Sync files
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          rm -rf .claude/skills/remotion-official
+          cp -r /tmp/remotion-skills/skills/remotion .claude/skills/remotion-official
+
+      - name: Create pull request
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: auto/sync-remotion-skills
+          delete-branch: true
+          title: "Sync official Remotion skills (${{ env.UPSTREAM_SHA }})"
+          body: |
+            ## Automated sync from remotion-dev/skills
+
+            **Upstream commit:** [`${{ env.UPSTREAM_SHA }}`](https://github.com/remotion-dev/skills/commit/${{ env.UPSTREAM_SHA_FULL }})
+            **Files changed:** ${{ steps.diff.outputs.changed_count }}
+
+            ### Review checklist
+            - [ ] Skim changed rule files for relevance
+            - [ ] Verify no conflicts with toolkit-specific `remotion/SKILL.md`
+            - [ ] Spot-check that `SKILL.md` frontmatter is intact
+          commit-message: "Sync official Remotion skills (upstream ${{ env.UPSTREAM_SHA }})"
+          labels: dependencies,automated

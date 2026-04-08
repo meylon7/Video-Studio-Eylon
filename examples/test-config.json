@@ -1,0 +1,77 @@
+{
+  "type": "product-demo",
+  "brand": "digital-samba",
+  "product": {
+    "name": "Studio Eylon",
+    "tagline": "Video Conferencing, Your Way",
+    "website": "digitalsamba.com",
+    "logo": "images/ds-logo.png"
+  },
+  "scenes": [
+    {
+      "type": "title",
+      "headline": "Video Meetings,\nReimagined",
+      "subheadline": "White-label video conferencing built for your brand",
+      "duration": 5,
+      "narration": "Video meetings, reimagined."
+    },
+    {
+      "type": "problem",
+      "headline": "The video call struggle is real",
+      "bullets": [
+        "Months of integration work",
+        "No branding control",
+        "Data compliance risks",
+        "Poor quality at scale"
+      ],
+      "duration": 6,
+      "narration": "Integrating video calls into your app takes months of work. No branding, compliance headaches, and poor quality at scale."
+    },
+    {
+      "type": "solution",
+      "headline": "Meet Studio Eylon",
+      "description": "The API-first video platform that works your way",
+      "highlights": [
+        "Embed in minutes, not months",
+        "Full white-label customization",
+        "GDPR-compliant by design"
+      ],
+      "duration": 6,
+      "narration": "Meet Studio Eylon. The API-first video platform that lets you embed white-label video conferencing in minutes."
+    },
+    {
+      "type": "stats",
+      "headline": "Built for Performance",
+      "stats": [
+        { "value": "5", "unit": "min", "label": "To First Call", "icon": "⚡" },
+        { "value": "100%", "label": "White-Label", "icon": "🎨" },
+        { "value": "EU", "label": "GDPR Hosted", "icon": "🇪🇺" }
+      ],
+      "duration": 7,
+      "narration": "Your first call in five minutes. Fully branded. GDPR compliant. Hosted in Europe."
+    },
+    {
+      "type": "cta",
+      "headline": "Start Building Today",
+      "tagline": "From zero to video calls in minutes",
+      "url": "digitalsamba.com",
+      "duration": 5,
+      "narration": "Start building today at Studio Eylon dot com."
+    }
+  ],
+  "visual": {
+    "background": "dark",
+    "transition": { "type": "fade", "durationFrames": 15 }
+  },
+  "audio": {
+    "voiceover": { "enabled": true, "voice": "en-GB-RyanNeural" },
+    "music": { "enabled": true, "volume": 0.1 },
+    "sfx": { "enabled": true }
+  },
+  "overlays": {
+    "vignette": true,
+    "logoWatermark": { "enabled": true, "position": "bottom-right" }
+  },
+  "output": { "width": 1920, "height": 1080, "fps": 30 },
+  "variants": ["subtitled", "vertical"]
+}

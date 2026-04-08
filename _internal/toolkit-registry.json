@@ -1,0 +1,1027 @@
+{
+  "name": "claude-code-video-toolkit",
+  "version": "0.14.1",
+  "description": "AI-native video production workspace for Claude Code",
+  "repository": "https://github.com/digitalsamba/claude-code-video-toolkit",
+  "skills": {
+    "remotion-official": {
+      "path": ".claude/skills/remotion-official/",
+      "description": "Official Remotion framework knowledge (synced from remotion-dev/skills)",
+      "status": "stable",
+      "upstream": "https://github.com/remotion-dev/skills",
+      "created": "2026-02-19",
+      "updated": "2026-02-19"
+    },
+    "remotion": {
+      "path": ".claude/skills/remotion/",
+      "description": "Toolkit-specific Remotion patterns — custom transitions, shared components, conventions",
+      "status": "stable",
+      "created": "2025-12-04",
+      "updated": "2026-02-19"
+    },
+    "elevenlabs": {
+      "path": ".claude/skills/elevenlabs/",
+      "description": "ElevenLabs audio - TTS, voice cloning, music, SFX",
+      "status": "stable",
+      "created": "2025-12-04",
+      "updated": "2025-12-04"
+    },
+    "ffmpeg": {
+      "path": ".claude/skills/ffmpeg/",
+      "description": "FFmpeg video/audio processing for Remotion assets",
+      "status": "beta",
+      "created": "2025-12-08",
+      "updated": "2025-12-09"
+    },
+    "playwright-recording": {
+      "path": ".claude/skills/playwright-recording/",
+      "description": "Playwright browser recording for demo videos",
+      "status": "beta",
+      "created": "2025-12-08",
+      "updated": "2025-12-10"
+    },
+    "frontend-design": {
+      "path": ".claude/skills/frontend-design/",
+      "description": "Visual design refinement for distinctive, production-grade aesthetics",
+      "status": "stable",
+      "created": "2025-12-10",
+      "updated": "2025-12-13"
+    },
+    "qwen-edit": {
+      "path": ".claude/skills/qwen-edit/",
+      "description": "AI image editing prompting patterns and best practices for Qwen-Image-Edit",
+      "status": "stable",
+      "category": "image-editing",
+      "backend": "qwen-image-edit-2511",
+      "created": "2026-01-03",
+      "updated": "2026-01-05"
+    },
+    "runpod": {
+      "path": ".claude/skills/runpod/",
+      "description": "Cloud GPU setup, Docker images, endpoint management, troubleshooting",
+      "status": "stable",
+      "created": "2026-02-23",
+      "updated": "2026-02-24"
+    },
+    "acestep": {
+      "path": ".claude/skills/acestep/",
+      "description": "AI music generation — prompt engineering, scene presets, lyrics formatting, video production integration",
+      "status": "beta",
+      "created": "2026-03-22",
+      "updated": "2026-03-22"
+    },
+    "ltx2": {
+      "path": ".claude/skills/ltx2/",
+      "description": "AI video generation — prompting guide, parameters, video production use cases (b-roll, animated slides, portraits)",
+      "status": "beta",
+      "created": "2026-03-25",
+      "updated": "2026-03-25"
+    }
+  },
+  "commands": {
+    "video": {
+      "path": ".claude/commands/video.md",
+      "description": "Video projects - list, resume, or create new",
+      "status": "stable",
+      "created": "2025-12-09",
+      "updated": "2025-12-09"
+    },
+    "brand": {
+      "path": ".claude/commands/brand.md",
+      "description": "Brand profiles - list, edit, or create new",
+      "status": "stable",
+      "created": "2025-12-09",
+      "updated": "2025-12-09"
+    },
+    "template": {
+      "path": ".claude/commands/template.md",
+      "description": "List available templates and their features",
+      "status": "stable",
+      "created": "2025-12-09",
+      "updated": "2025-12-09"
+    },
+    "skills": {
+      "path": ".claude/commands/skills.md",
+      "description": "List installed skills or create new ones",
+      "status": "stable",
+      "created": "2025-12-10",
+      "updated": "2025-12-10"
+    },
+    "record-demo": {
+      "path": ".claude/commands/record-demo.md",
+      "description": "Guided Playwright recording with interactive or script mode",
+      "status": "stable",
+      "created": "2025-12-08",
+      "updated": "2025-12-10"
+    },
+    "generate-voiceover": {
+      "path": ".claude/commands/generate-voiceover.md",
+      "description": "Generate TTS voiceover using ElevenLabs or Qwen3-TTS",
+      "status": "stable",
+      "created": "2025-12-08",
+      "updated": "2026-02-19"
+    },
+    "contribute": {
+      "path": ".claude/commands/contribute.md",
+      "description": "Share improvements - issues, PRs, skills, templates",
+      "status": "stable",
+      "created": "2025-12-10",
+      "updated": "2025-12-10"
+    },
+    "scene-review": {
+      "path": ".claude/commands/scene-review.md",
+      "description": "Scene-by-scene review in Remotion Studio before voiceover",
+      "status": "stable",
+      "created": "2025-12-10",
+      "updated": "2025-12-10"
+    },
+    "design": {
+      "path": ".claude/commands/design.md",
+      "description": "Focused design refinement session for a scene",
+      "status": "stable",
+      "created": "2025-12-10",
+      "updated": "2025-12-13"
+    },
+    "versions": {
+      "path": ".claude/commands/versions.md",
+      "description": "Check dependency versions and toolkit updates",
+      "status": "stable",
+      "created": "2025-12-20",
+      "updated": "2025-12-20"
+    },
+    "redub": {
+      "path": ".claude/commands/redub.md",
+      "description": "Redub video with a different voice (transcribe + TTS)",
+      "status": "beta",
+      "created": "2025-12-28",
+      "updated": "2025-12-28"
+    },
+    "voice-clone": {
+      "path": ".claude/commands/voice-clone.md",
+      "description": "Record, test, and save a cloned voice to a brand profile",
+      "status": "beta",
+      "created": "2026-02-19",
+      "updated": "2026-02-19"
+    },
+    "setup": {
+      "path": ".claude/commands/setup.md",
+      "description": "First-time toolkit setup - cloud GPU, file transfer, voice, and prerequisites",
+      "status": "beta",
+      "created": "2026-03-23",
+      "updated": "2026-03-23"
+    }
+  },
+  "tools": {
+    "voiceover": {
+      "path": "tools/voiceover.py",
+      "description": "Generate TTS voiceovers using ElevenLabs or Qwen3-TTS",
+      "usage": "python tools/voiceover.py --script SCRIPT.md --output out.mp3",
+      "status": "stable",
+      "created": "2025-12-08",
+      "updated": "2026-02-19"
+    },
+    "music": {
+      "path": "tools/music.py",
+      "description": "Generate background music using ElevenLabs",
+      "usage": "python tools/music.py --prompt 'description' --duration 120 --output music.mp3",
+      "status": "stable",
+      "created": "2025-12-08",
+      "updated": "2025-12-08"
+    },
+    "music_gen": {
+      "path": "tools/music_gen.py",
+      "description": "AI music generation using ACE-Step 1.5 (text-to-music, cover, stem extraction, repainting, continuation)",
+      "usage": "python tools/music_gen.py --prompt 'Upbeat tech' --duration 60 --bpm 128 --output music.mp3",
+      "status": "stable",
+      "options": {
+        "prompt": "Music description",
+        "lyrics": "Song lyrics (enables vocals)",
+        "duration": "Duration in seconds (10-600)",
+        "bpm": "Tempo (30-300)",
+        "key": "Musical key (e.g., 'C Major', 'Am')",
+        "time-sig": "Time signature (2, 3, 4, 6)",
+        "preset": "Scene preset (corporate-bg, upbeat-tech, ambient, dramatic, tension, hopeful, cta, lofi)",
+        "brand": "Brand name for style hints",
+        "cloud": "Cloud provider: acemusic (default), modal, runpod",
+        "thinking": "Enable 5Hz LM thinking mode (default for acemusic)",
+        "no-thinking": "Disable thinking mode (faster)",
+        "variations": "Generate N variations (1-8, acemusic only)",
+        "cover": "Cover/style transfer mode (requires --reference)",
+        "repaint": "Repaint mode: regenerate a time segment (acemusic only)",
+        "repaint-start": "Repaint start time in seconds",
+        "repaint-end": "Repaint end time in seconds",
+        "continuation": "Continue from existing audio (acemusic only)",
+        "extract": "Stem extraction (vocals, drums, bass, guitar, piano, other)",
+        "guidance-scale": "Prompt adherence (1.0-15.0)",
+        "infer-method": "Inference method: ode (deterministic) or sde (stochastic)",
+        "format": "Audio format: mp3, wav, flac",
+        "steps": "Inference steps (default: 8 for turbo)"
+      },
+      "presets": [
+        "corporate-bg",
+        "upbeat-tech",
+        "ambient",
+        "dramatic",
+        "tension",
+        "hopeful",
+        "cta",
+        "lofi"
+      ],
+      "envVars": [
+        "ACEMUSIC_API_KEY",
+        "RUNPOD_API_KEY",
+        "RUNPOD_ACESTEP_ENDPOINT_ID",
+        "MODAL_MUSIC_GEN_ENDPOINT_URL"
+      ],
+      "created": "2026-03-22",
+      "updated": "2026-04-03"
+    },
+    "sfx": {
+      "path": "tools/sfx.py",
+      "description": "Generate sound effects using ElevenLabs",
+      "usage": "python tools/sfx.py --preset whoosh --output sfx.mp3",
+      "status": "stable",
+      "created": "2025-12-08",
+      "updated": "2025-12-08"
+    },
+    "redub": {
+      "path": "tools/redub.py",
+      "description": "Redub video with different voice (extract audio, transcribe, TTS, replace)",
+      "usage": "python tools/redub.py --input video.mp4 --voice-id VOICE_ID --output dubbed.mp4",
+      "status": "beta",
+      "created": "2025-12-28",
+      "updated": "2025-12-28"
+    },
+    "addmusic": {
+      "path": "tools/addmusic.py",
+      "description": "Add background music to video (generate via ElevenLabs or use existing file)",
+      "usage": "python tools/addmusic.py --input video.mp4 --prompt 'Subtle corporate' --output output.mp4",
+      "status": "beta",
+      "created": "2025-12-28",
+      "updated": "2025-12-28"
+    },
+    "dewatermark": {
+      "path": "tools/dewatermark.py",
+      "description": "Remove watermarks using AI inpainting (ProPainter) - supports local and RunPod cloud",
+      "usage": "python tools/dewatermark.py --input video.mp4 --preset sora --output clean.mp4 --runpod",
+      "status": "beta",
+      "optional": true,
+      "requires": "RunPod account OR local NVIDIA GPU + ProPainter (~2GB)",
+      "presets": [
+        "notebooklm",
+        "tiktok",
+        "sora",
+        "stock-br",
+        "stock-bl",
+        "stock-center"
+      ],
+      "created": "2025-12-29",
+      "updated": "2025-12-30"
+    },
+    "locate_watermark": {
+      "path": "tools/locate_watermark.py",
+      "description": "Helper tool to identify watermark coordinates using grid overlay and verification",
+      "usage": "python tools/locate_watermark.py --input video.mp4 --grid --output-dir ./review/",
+      "status": "beta",
+      "requires": "ImageMagick (brew install imagemagick)",
+      "presets": [
+        "notebooklm",
+        "tiktok",
+        "sora",
+        "stock-br",
+        "stock-bl",
+        "stock-center"
+      ],
+      "created": "2025-12-29",
+      "updated": "2025-12-30"
+    },
+    "verify_setup": {
+      "path": "tools/verify_setup.py",
+      "description": "Verify toolkit setup - check prerequisites, cloud GPU, R2, and voice configuration",
+      "usage": "python tools/verify_setup.py [--test] [--json]",
+      "status": "beta",
+      "created": "2026-03-23",
+      "updated": "2026-03-23"
+    },
+    "notebooklm_brand": {
+      "path": "tools/notebooklm_brand.py",
+      "description": "Post-process NotebookLM videos with custom branding (trim outro, add logo/URL)",
+      "usage": "python tools/notebooklm_brand.py --input video.mp4 --logo logo.png --url 'mysite.com' --output branded.mp4",
+      "status": "beta",
+      "created": "2025-12-29",
+      "updated": "2025-12-29"
+    },
+    "image_edit": {
+      "path": "tools/image_edit.py",
+      "description": "AI image editing using Qwen-Image-Edit - style transfer, backgrounds, prompts",
+      "usage": "python tools/image_edit.py --input photo.jpg --prompt 'Add sunglasses' --output edited.png",
+      "status": "stable",
+      "category": "image-editing",
+      "backend": "qwen-image-edit-2511",
+      "requires": "RunPod account",
+      "presets": {
+        "background": [
+          "office",
+          "studio",
+          "outdoors",
+          "pyramids",
+          "beach",
+          "city",
+          "mountains",
+          "space",
+          "forest",
+          "cafe"
+        ],
+        "style": [
+          "cyberpunk",
+          "anime",
+          "oil-painting",
+          "watercolor",
+          "pixel-art",
+          "noir",
+          "pop-art",
+          "sketch",
+          "vintage",
+          "cinematic"
+        ],
+        "viewpoint": [
+          "front",
+          "profile",
+          "three-quarter",
+          "looking-up",
+          "looking-down"
+        ]
+      },
+      "envVars": [
+        "RUNPOD_API_KEY",
+        "RUNPOD_QWEN_EDIT_ENDPOINT_ID"
+      ],
+      "estimatedCost": "$0.01-0.02 per image",
+      "created": "2026-01-01",
+      "updated": "2026-01-05"
+    },
+    "upscale": {
+      "path": "tools/upscale.py",
+      "description": "AI image upscaling using RealESRGAN - 2x/4x with optional face enhancement",
+      "usage": "python tools/upscale.py --input photo.jpg --output photo_4x.png --runpod",
+      "status": "stable",
+      "category": "image-editing",
+      "backend": "realesrgan",
+      "requires": "RunPod account",
+      "options": {
+        "scale": [
+          2,
+          4
+        ],
+        "model": [
+          "general",
+          "anime",
+          "photo"
+        ],
+        "faceEnhance": true,
+        "format": [
+          "png",
+          "jpg",
+          "webp"
+        ]
+      },
+      "envVars": [
+        "RUNPOD_API_KEY",
+        "RUNPOD_UPSCALE_ENDPOINT_ID"
+      ],
+      "estimatedCost": "$0.01-0.05 per image",
+      "created": "2026-01-04",
+      "updated": "2026-01-05"
+    },
+    "sadtalker": {
+      "path": "tools/sadtalker.py",
+      "description": "Generate talking head videos from portrait image + audio using SadTalker",
+      "usage": "python tools/sadtalker.py --image portrait.png --audio voiceover.mp3 --preprocess full --output talking.mp4",
+      "status": "beta",
+      "category": "video-generation",
+      "backend": "sadtalker",
+      "requires": "RunPod account",
+      "options": {
+        "presets": [
+          "default",
+          "natural",
+          "expressive",
+          "professional",
+          "fullbody"
+        ],
+        "preprocess": [
+          "crop",
+          "resize",
+          "full"
+        ],
+        "size": [
+          256,
+          512
+        ],
+        "still": true,
+        "expressionScale": "0.5-2.0"
+      },
+      "envVars": [
+        "RUNPOD_API_KEY",
+        "RUNPOD_SADTALKER_ENDPOINT_ID"
+      ],
+      "estimatedCost": "$0.02-0.15 per video (depends on audio length)",
+      "documentation": "docs/sadtalker.md",
+      "created": "2026-01-11",
+      "updated": "2026-01-12"
+    },
+    "qwen3_tts": {
+      "path": "tools/qwen3_tts.py",
+      "description": "Generate speech using Qwen3-TTS - built-in voices, emotion control, voice cloning",
+      "usage": "python tools/qwen3_tts.py --text \"Hello\" --speaker Ryan --output hello.mp3",
+      "status": "beta",
+      "category": "audio-generation",
+      "backend": "qwen3-tts",
+      "requires": "RunPod account",
+      "options": {
+        "speakers": [
+          "Ryan",
+          "Aiden",
+          "Vivian",
+          "Serena",
+          "Uncle_Fu",
+          "Dylan",
+          "Eric",
+          "Ono_Anna",
+          "Sohee"
+        ],
+        "languages": [
+          "Auto",
+          "English",
+          "Chinese",
+          "French",
+          "German",
+          "Italian",
+          "Japanese",
+          "Korean",
+          "Portuguese",
+          "Russian",
+          "Spanish"
+        ],
+        "modes": [
+          "custom_voice",
+          "clone"
+        ],
+        "formats": [
+          "mp3",
+          "wav"
+        ]
+      },
+      "envVars": [
+        "RUNPOD_API_KEY",
+        "RUNPOD_QWEN3_TTS_ENDPOINT_ID"
+      ],
+      "estimatedCost": "$0.005-0.10 per generation",
+      "created": "2026-02-19",
+      "updated": "2026-02-19"
+    },
+    "sync_timing": {
+      "path": "tools/sync_timing.py",
+      "description": "Sync scene durationSeconds in Remotion config with actual audio durations",
+      "usage": "python tools/sync_timing.py --apply",
+      "status": "stable",
+      "category": "project",
+      "requires": "ffprobe (from ffmpeg)",
+      "created": "2026-02-24",
+      "updated": "2026-02-24"
+    },
+    "flux2": {
+      "path": "tools/flux2.py",
+      "description": "AI image generation and editing using FLUX.2 Klein 4B - text-to-image, image editing, and scene presets",
+      "usage": "python tools/flux2.py --preset title-bg --brand digital-samba",
+      "status": "beta",
+      "category": "image-generation",
+      "backend": "flux2-klein-4b",
+      "requires": "RunPod account",
+      "options": {
+        "modes": [
+          "generate",
+          "edit"
+        ],
+        "presets": [
+          "title-bg",
+          "problem",
+          "solution",
+          "demo-bg",
+          "stats-bg",
+          "cta",
+          "thumbnail",
+          "portrait-bg"
+        ],
+        "brand": true,
+        "width": [
+          512,
+          768,
+          1024,
+          1280,
+          1920
+        ],
+        "height": [
+          512,
+          768,
+          1024,
+          1080,
+          1280
+        ],
+        "steps": "4 (fast) to 50 (quality)",
+        "guidance": "1.0 (fast) to 4.0 (quality)",
+        "seed": true,
+        "multiImage": true
+      },
+      "envVars": [
+        "RUNPOD_API_KEY",
+        "RUNPOD_FLUX2_ENDPOINT_ID"
+      ],
+      "estimatedCost": "$0.01-0.03 per image",
+      "created": "2026-03-14",
+      "updated": "2026-03-15"
+    },
+    "ltx2": {
+      "path": "tools/ltx2.py",
+      "description": "AI video generation using LTX-2.3 22B - text-to-video, image-to-video clips with synchronized audio",
+      "usage": "python tools/ltx2.py --prompt \"A sunset over the ocean\" --output sunset.mp4",
+      "status": "beta",
+      "category": "video-generation",
+      "backend": "ltx-2.3-22b",
+      "requires": "Modal account, HuggingFace token",
+      "options": {
+        "modes": [
+          "text-to-video",
+          "image-to-video"
+        ],
+        "width": [
+          512,
+          768,
+          1024
+        ],
+        "height": [
+          512,
+          576,
+          1024
+        ],
+        "numFrames": "25-193 ((n-1)%8==0)",
+        "fps": 24,
+        "quality": [
+          "standard",
+          "fast"
+        ],
+        "steps": "15 (fast) to 30+ (standard)",
+        "seed": true
+      },
+      "envVars": [
+        "MODAL_LTX2_ENDPOINT_URL"
+      ],
+      "estimatedCost": "$0.20-0.25 per 5s clip",
+      "created": "2026-03-25",
+      "updated": "2026-03-25"
+    },
+    "chain_video": {
+      "path": "tools/chain_video.py",
+      "description": "Chain LTX-2 clips with visual continuity — each scene uses the last frame of the previous as input",
+      "usage": "python tools/chain_video.py --scenes-dir images/ --output-dir videos/ --prompt \"Cinematic flow\"",
+      "status": "beta",
+      "category": "video-generation",
+      "backend": "ltx-2.3-22b (via ltx2.py)",
+      "requires": "Modal account (same as ltx2)",
+      "options": {
+        "inputModes": [
+          "scenes-dir (numbered images)",
+          "first-clip (existing video)"
+        ],
+        "perScenePrompts": "--prompts-file scenes.json",
+        "resume": "auto-skips existing clips",
+        "progress": ["json", "human"],
+        "prefix": "chain (default)"
+      },
+      "envVars": [
+        "MODAL_LTX2_ENDPOINT_URL"
+      ],
+      "estimatedCost": "$0.20-0.25 per scene (delegates to ltx2)",
+      "created": "2026-04-04",
+      "updated": "2026-04-04"
+    }
+  },
+  "optionalComponents": {
+    "propainter": {
+      "name": "ProPainter",
+      "description": "AI video inpainting for watermark removal (local mode)",
+      "installPath": "~/.video-toolkit/propainter/",
+      "repository": "https://github.com/sczhou/ProPainter.git",
+      "diskSpace": "~2GB",
+      "hardware": {
+        "recommended": "NVIDIA GPU (8GB+ VRAM)",
+        "notSupported": "Apple Silicon, CPU (use --runpod instead)",
+        "memory": "8-10GB VRAM for 720p with fp16"
+      },
+      "installCommand": "python tools/dewatermark.py --install",
+      "statusCommand": "python tools/dewatermark.py --status",
+      "documentation": "docs/optional-components.md"
+    }
+  },
+  "cloudProviders": {
+    "runpod": {
+      "name": "RunPod",
+      "description": "Serverless GPU cloud for video and image processing",
+      "documentation": "docs/runpod-setup.md",
+      "envVars": [
+        "RUNPOD_API_KEY"
+      ],
+      "endpoints": {
+        "propainter": {
+          "image": "ghcr.io/conalmullan/video-toolkit-propainter:latest",
+          "dockerfile": "docker/runpod-propainter/",
+          "envVar": "RUNPOD_ENDPOINT_ID",
+          "operations": [
+            "dewatermark"
+          ],
+          "estimatedCost": "$0.05-0.30 per video"
+        },
+        "qwen-edit": {
+          "image": "ghcr.io/conalmullan/video-toolkit-qwen-edit:latest",
+          "dockerfile": "docker/runpod-qwen-edit/",
+          "envVar": "RUNPOD_QWEN_EDIT_ENDPOINT_ID",
+          "operations": [
+            "image_edit"
+          ],
+          "estimatedCost": "$0.01-0.02 per image"
+        },
+        "realesrgan": {
+          "image": "ghcr.io/conalmullan/video-toolkit-realesrgan:latest",
+          "dockerfile": "docker/runpod-realesrgan/",
+          "envVar": "RUNPOD_UPSCALE_ENDPOINT_ID",
+          "operations": [
+            "upscale"
+          ],
+          "estimatedCost": "$0.01-0.05 per image"
+        },
+        "sadtalker": {
+          "image": "ghcr.io/conalmullan/video-toolkit-sadtalker:latest",
+          "dockerfile": "docker/runpod-sadtalker/",
+          "envVar": "RUNPOD_SADTALKER_ENDPOINT_ID",
+          "operations": [
+            "sadtalker"
+          ],
+          "estimatedCost": "$0.02-0.15 per video"
+        },
+        "qwen3-tts": {
+          "image": "ghcr.io/conalmullan/video-toolkit-qwen3-tts:latest",
+          "dockerfile": "docker/runpod-qwen3-tts/",
+          "envVar": "RUNPOD_QWEN3_TTS_ENDPOINT_ID",
+          "operations": [
+            "qwen3_tts"
+          ],
+          "estimatedCost": "$0.005-0.10 per generation"
+        },
+        "flux2": {
+          "image": "ghcr.io/conalmullan/video-toolkit-flux2:latest",
+          "dockerfile": "docker/runpod-flux2/",
+          "envVar": "RUNPOD_FLUX2_ENDPOINT_ID",
+          "operations": [
+            "flux2"
+          ],
+          "estimatedCost": "$0.01-0.03 per image"
+        },
+        "acestep": {
+          "image": "ghcr.io/conalmullan/video-toolkit-acestep:latest",
+          "dockerfile": "docker/runpod-acestep/",
+          "envVar": "RUNPOD_ACESTEP_ENDPOINT_ID",
+          "operations": [
+            "music_gen"
+          ],
+          "estimatedCost": "$0.01-0.05 per track"
+        }
+      },
+      "created": "2025-12-30",
+      "updated": "2026-03-22"
+    },
+    "modal": {
+      "name": "Modal",
+      "description": "Serverless GPU cloud with Python-native deployment and fast cold starts",
+      "documentation": "docs/modal-setup.md",
+      "envVars": [
+        "MODAL_TOKEN_ID",
+        "MODAL_TOKEN_SECRET"
+      ],
+      "endpoints": {
+        "qwen3-tts": {
+          "appFile": "docker/modal-qwen3-tts/app.py",
+          "envVar": "MODAL_QWEN3_TTS_ENDPOINT_URL",
+          "operations": [
+            "qwen3_tts"
+          ],
+          "gpu": "A10G",
+          "estimatedCost": "$0.005-0.10 per generation"
+        },
+        "flux2": {
+          "appFile": "docker/modal-flux2/app.py",
+          "envVar": "MODAL_FLUX2_ENDPOINT_URL",
+          "operations": [
+            "flux2"
+          ],
+          "gpu": "A10G",
+          "estimatedCost": "$0.01-0.03 per image"
+        },
+        "upscale": {
+          "appFile": "docker/modal-upscale/app.py",
+          "envVar": "MODAL_UPSCALE_ENDPOINT_URL",
+          "operations": [
+            "upscale"
+          ],
+          "gpu": "A10G",
+          "estimatedCost": "$0.005-0.02 per image"
+        },
+        "image-edit": {
+          "appFile": "docker/modal-image-edit/app.py",
+          "envVar": "MODAL_IMAGE_EDIT_ENDPOINT_URL",
+          "operations": [
+            "image_edit"
+          ],
+          "gpu": "A100",
+          "estimatedCost": "$0.02-0.05 per image"
+        },
+        "music-gen": {
+          "appFile": "docker/modal-music-gen/app.py",
+          "envVar": "MODAL_MUSIC_GEN_ENDPOINT_URL",
+          "operations": [
+            "music_gen"
+          ],
+          "gpu": "A10G",
+          "estimatedCost": "$0.02-0.10 per generation"
+        },
+        "sadtalker": {
+          "appFile": "docker/modal-sadtalker/app.py",
+          "envVar": "MODAL_SADTALKER_ENDPOINT_URL",
+          "operations": [
+            "sadtalker"
+          ],
+          "gpu": "A10G",
+          "estimatedCost": "$0.05-0.30 per video"
+        },
+        "dewatermark": {
+          "appFile": "docker/modal-propainter/app.py",
+          "envVar": "MODAL_DEWATERMARK_ENDPOINT_URL",
+          "operations": [
+            "dewatermark"
+          ],
+          "gpu": "A10G",
+          "estimatedCost": "$0.05-0.50 per video"
+        },
+        "ltx2": {
+          "appFile": "docker/modal-ltx2/app.py",
+          "envVar": "MODAL_LTX2_ENDPOINT_URL",
+          "operations": [
+            "text-to-video",
+            "image-to-video"
+          ],
+          "gpu": "A100-80GB",
+          "estimatedCost": "$0.20-0.25 per 5s clip"
+        }
+      },
+      "created": "2026-03-23",
+      "updated": "2026-03-25"
+    }
+  },
+  "templates": {
+    "sprint-review": {
+      "path": "templates/sprint-review/",
+      "description": "Sprint review videos with demos, stats, and voiceover",
+      "status": "stable",
+      "created": "2025-12-04",
+      "updated": "2025-12-09"
+    },
+    "sprint-review-v2": {
+      "path": "templates/sprint-review-v2/",
+      "description": "Composable scene-based sprint review with film-quality upgrades",
+      "status": "beta",
+      "created": "2026-02-19",
+      "updated": "2026-02-19"
+    },
+    "product-demo": {
+      "path": "templates/product-demo/",
+      "description": "Marketing videos with dark tech aesthetic, stats, CTA",
+      "status": "stable",
+      "created": "2025-12-09",
+      "updated": "2025-12-10"
+    }
+  },
+  "transitions": {
+    "glitch": {
+      "path": "lib/transitions/presentations/glitch.tsx",
+      "description": "Digital distortion with RGB shift and scan lines",
+      "options": [
+        "intensity",
+        "slices",
+        "rgbShift"
+      ],
+      "bestFor": "Tech demos, edgy reveals, cyberpunk aesthetic",
+      "status": "stable"
+    },
+    "rgbSplit": {
+      "path": "lib/transitions/presentations/rgb-split.tsx",
+      "description": "Chromatic aberration / color separation effect",
+      "options": [
+        "direction",
+        "displacement"
+      ],
+      "bestFor": "Modern tech, energetic transitions",
+      "status": "stable"
+    },
+    "zoomBlur": {
+      "path": "lib/transitions/presentations/zoom-blur.tsx",
+      "description": "Radial motion blur with scale",
+      "options": [
+        "direction",
+        "blurAmount"
+      ],
+      "bestFor": "CTAs, high-energy moments, impact",
+      "status": "stable"
+    },
+    "lightLeak": {
+      "path": "lib/transitions/presentations/light-leak.tsx",
+      "description": "Cinematic lens flare and overexposure",
+      "options": [
+        "temperature",
+        "direction"
+      ],
+      "bestFor": "Celebrations, film aesthetic, warm moments",
+      "status": "stable"
+    },
+    "clockWipe": {
+      "path": "lib/transitions/presentations/clock-wipe.tsx",
+      "description": "Radial sweep reveal like clock hands",
+      "options": [
+        "startAngle",
+        "direction",
+        "segments"
+      ],
+      "bestFor": "Time-related content, playful reveals",
+      "status": "stable"
+    },
+    "pixelate": {
+      "path": "lib/transitions/presentations/pixelate.tsx",
+      "description": "Digital mosaic dissolution with glitch artifacts",
+      "options": [
+        "maxBlockSize",
+        "gridSize",
+        "scanlines",
+        "glitchArtifacts",
+        "randomness"
+      ],
+      "bestFor": "Retro/gaming themes, digital transformations",
+      "status": "stable"
+    },
+    "checkerboard": {
+      "path": "lib/transitions/presentations/checkerboard.tsx",
+      "description": "Grid-based reveal with multiple patterns",
+      "options": [
+        "gridSize",
+        "pattern",
+        "stagger",
+        "squareAnimation"
+      ],
+      "patterns": [
+        "sequential",
+        "random",
+        "diagonal",
+        "alternating",
+        "spiral",
+        "rows",
+        "columns",
+        "center-out",
+        "corners-in"
+      ],
+      "bestFor": "Playful reveals, structured transitions",
+      "status": "stable"
+    }
+  },
+  "components": {
+    "AnimatedBackground": {
+      "path": "lib/components/AnimatedBackground.tsx",
+      "description": "Floating shapes background with variants (subtle, tech, warm, dark)",
+      "created": "2025-12-09",
+      "updated": "2025-12-09"
+    },
+    "SlideTransition": {
+      "path": "lib/components/SlideTransition.tsx",
+      "description": "Scene transitions (fade, zoom, slide-up, blur-fade)",
+      "created": "2025-12-09",
+      "updated": "2025-12-09"
+    },
+    "Label": {
+      "path": "lib/components/Label.tsx",
+      "description": "Floating label badge with optional JIRA reference",
+      "created": "2025-12-09",
+      "updated": "2025-12-09"
+    },
+    "Vignette": {
+      "path": "lib/components/Vignette.tsx",
+      "description": "Cinematic edge darkening overlay",
+      "created": "2025-12-09",
+      "updated": "2025-12-09"
+    },
+    "LogoWatermark": {
+      "path": "lib/components/LogoWatermark.tsx",
+      "description": "Corner logo branding overlay",
+      "created": "2025-12-09",
+      "updated": "2025-12-09"
+    },
+    "SplitScreen": {
+      "path": "lib/components/SplitScreen.tsx",
+      "description": "Side-by-side video comparison layout",
+      "created": "2025-12-09",
+      "updated": "2025-12-09"
+    },
+    "NarratorPiP": {
+      "path": "lib/components/NarratorPiP.tsx",
+      "description": "Picture-in-picture presenter overlay (works with SadTalker)",
+      "status": "stable",
+      "created": "2025-12-09",
+      "updated": "2026-01-12"
+    },
+    "Envelope": {
+      "path": "lib/components/Envelope.tsx",
+      "description": "3D envelope with opening flap animation",
+      "created": "2025-12-10",
+      "updated": "2025-12-10"
+    },
+    "PointingHand": {
+      "path": "lib/components/PointingHand.tsx",
+      "description": "Animated hand emoji with directional slide-in and pulse",
+      "created": "2025-12-10",
+      "updated": "2025-12-10"
+    },
+    "MazeDecoration": {
+      "path": "lib/components/MazeDecoration.tsx",
+      "description": "Animated isometric grid decoration for video corners with wave animation",
+      "created": "2026-01-25",
+      "updated": "2026-01-25"
+    },
+    "FilmGrain": {
+      "path": "lib/components/FilmGrain.tsx",
+      "description": "SVG noise overlay for cinematic film texture",
+      "created": "2026-02-19",
+      "updated": "2026-02-19"
+    }
+  },
+  "brands": {
+    "default": {
+      "path": "brands/default/",
+      "description": "Clean, professional brand with orange accent",
+      "created": "2025-12-08",
+      "updated": "2025-12-08"
+    },
+    "digital-samba": {
+      "path": "brands/digital-samba/",
+      "description": "Digital Samba - European video conferencing platform",
+      "created": "2025-12-09",
+      "updated": "2025-12-09"
+    }
+  },
+  "examples": {
+    "hello-world": {
+      "path": "examples/hello-world/",
+      "description": "Minimal 25s video — zero config, renders in 2 minutes",
+      "template": "sprint-review",
+      "complexity": "beginner",
+      "created": "2026-02-24"
+    },
+    "digital-samba-skill-demo": {
+      "path": "examples/digital-samba-skill-demo/",
+      "description": "Marketing video for Claude Code skill",
+      "template": "product-demo",
+      "complexity": "intermediate",
+      "contributor": "Digital Samba"
+    },
+    "sprint-review-cho-oyu": {
+      "path": "examples/sprint-review-cho-oyu/",
+      "description": "iOS sprint review for Digital Samba Mobile",
+      "template": "sprint-review",
+      "complexity": "intermediate",
+      "contributor": "Digital Samba"
+    },
+    "the-space-between": {
+      "path": "examples/the-space-between/",
+      "description": "AI-generated video essay — flux2 avatar, Qwen3-TTS voice, SadTalker animation",
+      "template": "custom",
+      "complexity": "advanced",
+      "demo": "https://demos.digitalsamba.com/video/the-space-between.mp4",
+      "created": "2026-03-15"
+    }
+  },
+  "config": {
+    "voiceId": "YOUR_VOICE_ID_HERE",
+    "defaultFps": 30,
+    "defaultResolution": {
+      "width": 1920,
+      "height": 1080
+    },
+    "projectsDir": "projects/",
+    "templatesDir": "templates/",
+    "brandsDir": "brands/"
+  }
+}
