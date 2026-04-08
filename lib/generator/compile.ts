@@ -360,10 +360,10 @@ ${hasMusicFile ? `        {/* Background Music */}
         {overlays.vignette.enabled && (
           <Vignette intensity={overlays.vignette.intensity} />
         )}
-        {overlays.logoWatermark.enabled && product.logo && (
+        {overlays.logoWatermark.enabled && (product.logo || product.name) && (
           <LogoWatermark
-            logoSrc={product.logo}
-            label={product.name}
+            logoSrc={product.logo || ''}
+            label={product.logo ? undefined : product.name}
             fadeInFrame={30}
             size={80}
             maxOpacity={0.9}

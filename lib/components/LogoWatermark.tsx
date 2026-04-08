@@ -62,14 +62,16 @@ export const LogoWatermark: React.FC<LogoWatermarkProps> = ({
         opacity,
       }}
     >
-      <Img
-        src={staticFile(logoSrc)}
-        style={{
-          height: size,
-          maxWidth: size * 4,
-          objectFit: 'contain',
-        }}
-      />
+      {logoSrc && (
+        <Img
+          src={staticFile(logoSrc)}
+          style={{
+            height: size,
+            maxWidth: size * 4,
+            objectFit: 'contain',
+          }}
+        />
+      )}
       {label && (
         <span
           style={{
