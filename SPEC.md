@@ -1,159 +1,261 @@
-# SPEC.md
+# SPEC.md — Studio Eylon Video Toolkit
 
 ## Project Name
-Starter Product Demo
+Studio Eylon Video Toolkit
 
-## Objective
-Create a first working showcase video using `digitalsamba/claude-code-video-toolkit`.
-The goal is to validate the toolkit workflow end-to-end, not to maximize complexity.
+## Status
+Active — Production-ready. Forked from `digitalsamba/claude-code-video-toolkit` and significantly extended.
+
+## Repository
+https://github.com/meylon7/Video-Studio-Eylon
+
+## Overview
+
+An AI-powered video creation toolkit built on [Remotion](https://www.remotion.dev/) and [Claude Code](https://claude.ai/code).
+The toolkit generates production-quality MP4 videos from a JSON config, with a full Web UI,
+13 animated scene types, config-driven pipeline, Hebrew/Arabic RTL support, image/video upload integration,
+cloud GPU tools, and gallery management.
+
+Designed for AI educators, marketers, and developers who need to produce branded video content
+without a dedicated video production team.
+
+---
+
+## Evolution History
+
+| Phase | What Was Built |
+|-------|----------------|
+| V1 | Single-file product demo, validated core workflow with `digitalsamba` base |
+| V2 | Brand profiles, project lifecycle tracking, `product-demo` + `sprint-review` templates |
+| V3 | Config-driven generation pipeline, JSON schema, `resolve.ts` / `compile.ts` / `render.ts` |
+| V4 | Web UI (port 3333), form-based workflow, drag-and-drop uploads, gallery |
+| V5 | 13 scene types with animated entrances, 7 custom cinematic transitions |
+| V6 | Full RTL support (Hebrew + Arabic), `useIsRTL()` hook, mirrored layouts |
+| V7 | Cloud GPU tools (Modal + RunPod), 8 AI tools (FLUX.2, LTX-2, ACE-Step, SadTalker, etc.) |
+| V8 | Edge TTS + ElevenLabs + Qwen3-TTS audio pipeline, background music, SFX |
+| V9 | 16 Docker images, CI/CD workflows, AGPL release, open-source contribution structure |
+
+---
 
 ## Primary Deliverable
-- One 30–45 second branded explainer / product demo in MP4
 
-## Secondary Deliverables
-- Editable project structure under `projects/`
-- Reusable brand profile
-- Reusable scene pattern for future demos
+A fully rendered MP4 video, generated from a JSON config or Web UI form, with:
+- Branded visual identity
+- Animated scenes with transitions
+- AI voiceover and background music
+- RTL/LTR layout support
 
-## Audience
-- Prospective customers
-- Webinar or course viewers
-- Internal stakeholders who need a concise visual demo
+---
 
-## Video Format
-- Orientation: landscape
-- Resolution: 1920x1080
-- Frame rate: 30fps
-- Duration: 30–45 sec
-- Tone: premium, concise, modern, credible
+## Audiences
 
-## Success Criteria
-- The viewer understands the offer within the first 8 seconds.
-- The video communicates one clear value proposition.
-- The design looks intentional and consistent.
-- The project can be resumed in a later Claude Code session.
-- The final render is shareable without manual repair.
+| Audience | Use Case |
+|----------|----------|
+| AI educators | Course intro/outro videos, webinar openers |
+| Marketers | Product demos, launch announcements |
+| Developers | Sprint review recaps, tool walkthroughs |
+| Hebrew/Arabic content creators | RTL-native video production |
 
-## Recommended Template
-Use `product-demo` unless the actual brief is closer to a sprint update.
+---
 
-## Recommended Brand Setup
-Create or reuse a brand profile with:
-- Primary color
-- Secondary color
-- Neutral background colors
-- Typography choices
-- Logo asset
-- Voice settings if narration is used
+## Architecture
 
-## Narrative Structure
-### Scene 1 — Hook
-Goal: capture attention immediately.
-Content:
-- short headline or bold visual opener
-- no more than one idea
-Target length: 4–6 sec
+### Core Stack
+- **Remotion** — React-based video rendering engine
+- **TypeScript** — all generation pipeline code
+- **Python** — audio, image, video AI tools
+- **Express** — Web UI server (port 3333)
+- **Docker** — cloud GPU deployments (Modal + RunPod)
 
-### Scene 2 — Problem
-Goal: show the friction or old way.
-Content:
-- 1 short problem statement
-- supporting visual or interface moment
-Target length: 4–6 sec
+### Generation Pipeline
 
-### Scene 3 — Reveal
-Goal: introduce the product, workflow, or method.
-Content:
-- product name or concept reveal
-- stronger visual identity
-Target length: 5–7 sec
+```
+Form / JSON Config
+    → resolve.ts     (fill defaults, calculate frames)
+    → compile.ts     (generate Remotion TSX + composition JSON)
+    → assets.ts      (voiceover, music, SFX)
+    → render.ts      (Remotion render → MP4)
+```
 
-### Scene 4 — Core Capability
-Goal: prove the main value.
-Content:
-- 1 capability
-- 1 concrete visual cue
-Target length: 5–7 sec
+### Directory Structure
 
-### Scene 5 — Supporting Proof
-Goal: support trust and differentiation.
-Possible content:
-- quick UI demo
-- 2–3 compact highlights
-- before/after
-Target length: 5–7 sec
+```
+├── app/              Web UI (HTML form, gallery, player)
+├── lib/
+│   ├── generator/    Pipeline: schema, defaults, resolve, compile, assets, render
+│   ├── components/   React scene components + overlays
+│   ├── transitions/  7 custom cinematic transitions
+│   └── theme/        ThemeProvider, useTheme, useIsRTL
+├── brands/           Brand profiles (colors, fonts, voice)
+├── templates/        Remotion project templates
+├── tools/            CLI tools, server, Python AI scripts
+├── docker/           16 cloud GPU Docker images
+├── skills/           Claude Code skill definitions
+└── examples/         hello-world, product-demo, sprint-review
+```
 
-### Scene 6 — CTA
-Goal: close clearly.
-Content:
-- simple call to action
-- logo / URL / brand end frame
-Target length: 4–6 sec
+---
 
-## Visual Requirements
-- Strong hierarchy
-- Large readable typography
-- Generous spacing
-- Consistent motion language
-- Controlled use of transitions
-- No cluttered slides
+## Scene Types (13)
 
-## Audio Requirements
-If narration is included:
-- natural pacing
-- clean pronunciation
-- brief sentences
-- music below narration, never competing
+| Type | Purpose |
+|------|---------|
+| `title` | Opening scene with logo and headline |
+| `problem` | Pain points with animated cards |
+| `solution` | Solution reveal with highlight cards |
+| `demo` | Video playback in browser/terminal chrome |
+| `image` | Uploaded image (fullscreen / contain / split) |
+| `stats` | Animated stat cards with icons |
+| `spotlight` | Feature deep-dive with bullet points |
+| `comparison` | Side-by-side feature comparison table |
+| `testimonial` | Customer quote with word-by-word reveal |
+| `infographic` | Animated counters, progress rings, bar charts |
+| `cta` | Call-to-action with links and logo |
+| `webinar-intro` | Webinar opening with animated particles |
+| `webinar-outro` | Webinar closing with fade-out |
 
-If narration is not included:
-- design motion and timing must still communicate the core message
+---
 
-## Asset Requirements
-Preferred asset sources:
-1. existing brand assets
-2. Playwright demo capture via `/record-demo`
-3. toolkit-supported generation tools
-4. manually added assets
+## Transitions (11)
 
-## Review Checklist
-Before final render, verify:
-- scene order makes sense
-- text is readable at normal playback speed
-- no awkward pauses
-- transitions support the story
-- visuals match the brand
-- audio starts and ends cleanly
-- final CTA is visible long enough
+7 custom cinematic: `glitch`, `rgbSplit`, `zoomBlur`, `lightLeak`, `clockWipe`, `pixelate`, `checkerboard`
+4 official Remotion: `fade`, `slide`, `wipe`, `flip`
 
-## Technical Workflow
-1. Run `/setup` if needed
-2. Create or select a brand with `/brand`
-3. Select template with `/template`
-4. Create project with `/video`
-5. Capture demo if needed with `/record-demo`
-6. Review scenes with `/scene-review`
-7. Improve weak scenes with `/design`
-8. Generate narration with `/generate-voiceover` if needed
-9. Render final MP4
+---
 
-## Out of Scope for V1
-- multiple aspect ratios
-- multilingual versions
-- advanced character animation
-- custom 3D scenes
-- long-form voice-led storytelling
-- complex branching templates
+## Audio Pipeline
 
-## Risks
-- overdesign in the first pass
-- weak asset quality
-- too much text
-- unbalanced music and voiceover
-- trying to use every tool at once
+| Provider | Type | Cost |
+|----------|------|------|
+| Edge TTS | 24+ voices including Hebrew/Arabic | Free |
+| ElevenLabs | Premium TTS + voice cloning | API key required |
+| Qwen3-TTS | Self-hosted, 9 speakers | Cloud GPU |
+| ACE-Step | AI music generation | Cloud GPU |
+| Python SFX | Synthetic sound effects | Free |
 
-## V1 Acceptance
-Approve V1 only if:
-- the core message is obvious
-- the render is clean
-- the workflow can be repeated
-- next improvements are small, not structural
+---
+
+## Cloud GPU Tools (Optional)
+
+| Tool | What It Does |
+|------|-------------|
+| `flux2` | Text-to-image (FLUX.2 Klein 4B) |
+| `ltx2` | Text/image-to-video (LTX-2.3 22B) |
+| `image_edit` | AI image editing and style transfer |
+| `upscale` | AI upscaling 2x/4x (RealESRGAN) |
+| `music_gen` | AI music generation (ACE-Step 1.5) |
+| `qwen3_tts` | Text-to-speech (9 speakers) |
+| `sadtalker` | Talking avatar from portrait + audio |
+| `dewatermark` | Video watermark removal (ProPainter) |
+
+Providers: Modal (recommended, $30/month free tier), RunPod (~$0.44/hr GPU).
+
+---
+
+## RTL Support
+
+- Set `direction: "rtl"` in config or Visual tab
+- Auto-detected when selecting `he-*` or `ar-*` voices
+- All scene components mirror: flex direction, margins, slide animations, accent positions
+- Logo watermark and decorative elements reposition correctly
+- `useIsRTL()` hook available for custom components
+
+---
+
+## Brand System
+
+Each brand profile in `brands/` defines:
+- `brand.json` — colors, fonts, typography
+- `voice.json` — voice ID, rate, pitch
+- `assets/` — logo, backgrounds
+
+Included brands: `default`, `digital-samba` (Studio Eylon).
+Custom brands created via `/brand` command or by adding files directly.
+
+---
+
+## Claude Code Commands
+
+| Command | Description |
+|---------|-------------|
+| `/setup` | First-time setup (cloud GPU, voice, prerequisites) |
+| `/video` | List, resume, or create video projects |
+| `/scene-review` | Scene-by-scene review in Remotion Studio |
+| `/design` | Focused design refinement for a scene |
+| `/brand` | List, edit, or create brand profiles |
+| `/template` | List or create templates |
+| `/record-demo` | Record browser interactions with Playwright |
+| `/generate-voiceover` | Generate AI voiceover from script |
+| `/redub` | Redub existing video with a different voice |
+| `/voice-clone` | Record, test, and save a cloned voice |
+
+---
+
+## Output Formats
+
+| Format | Resolution |
+|--------|-----------|
+| Landscape (default) | 1920×1080 |
+| Vertical | 1080×1920 |
+| Square | 1080×1080 |
+
+FPS: 30 (default), configurable. Subtitled variant supported.
+
+---
+
+## Web UI
+
+Tabs: Project → Visual → Audio → Scenes → Media & Assets
+
+Features:
+- Drag-and-drop asset upload (logo, images, videos)
+- 24+ voice selection with live preview
+- Scene builder with type-specific fields
+- Gallery with playback, download, and delete
+- Generation progress polling via `/api/status/:jobId`
+
+---
+
+## Success Criteria (Current)
+
+- A first-time user can generate a branded MP4 within 10 minutes using the Web UI without any API keys.
+- All 13 scene types render cleanly in LTR and RTL layouts.
+- The JSON config is the single source of truth — the same config produces the same video in any environment.
+- Cloud GPU tools are optional and additive — the toolkit is fully functional without them.
+- Generated projects are self-contained and can be re-rendered independently.
+
+---
+
+## Known Constraints
+
+- Remotion rendering is CPU-bound locally; cloud GPU recommended for fast iteration at scale.
+- `sadtalker` and `dewatermark` tools carry usage responsibilities — use responsibly and respect content ownership.
+- ElevenLabs voice cloning requires explicit consent from the voice owner.
+- Edge TTS requires Python 3.9+ and internet access at render time.
+
+---
+
+## Out of Scope (Current Version)
+
+- Real-time collaborative editing
+- Browser-based Remotion Studio (local only)
+- Native mobile rendering
+- Multi-language subtitle generation
+- Complex 3D scene animation beyond current transitions
+
+---
+
+## Roadmap (V10+)
+
+- [ ] Scene preview thumbnails in Web UI before render
+- [ ] Template marketplace / community submissions
+- [ ] One-click deploy to Cloudflare Pages or Vercel
+- [ ] Subtitle export (SRT/VTT) from narration script
+- [ ] Claude Code integration for scene suggestions mid-session
+
+---
+
+## License
+
+AGPL v3 © 2024–2026 [Studio Eylon](https://www.meylon.co.il).
+Originally based on [Digital Samba's claude-code-video-toolkit](https://github.com/digitalsamba/claude-code-video-toolkit).

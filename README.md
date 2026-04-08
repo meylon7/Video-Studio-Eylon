@@ -9,8 +9,8 @@ Created by [Studio Eylon](https://www.meylon.co.il).
 ## Quick Start
 
 ```bash
-git clone https://github.com/studio-eylon/video-toolkit.git
-cd video-toolkit
+git clone https://github.com/meylon7/Video-Studio-Eylon.git
+cd Video-Studio-Eylon
 
 # Install Node dependencies
 npm install
@@ -248,7 +248,7 @@ brands/my-brand/
 └── assets/       # Logo, backgrounds
 ```
 
-Included brands: `default`, `studio-eylon`
+Included brands: `default`, `digital-samba` (Studio Eylon)
 
 Create your own with `/brand` or by adding files to `brands/your-brand/`.
 
@@ -308,7 +308,7 @@ Create your own with `/brand` or by adding files to `brands/your-brand/`.
 ```json
 {
   "type": "product-demo",
-  "brand": "studio-eylon",
+  "brand": "digital-samba",
   "product": {
     "name": "My Product",
     "tagline": "One line description",
@@ -395,7 +395,7 @@ claude-code-video-toolkit/
 │
 ├── brands/                  # Brand profiles (colors, fonts, voice)
 │   ├── default/
-│   └── studio-eylon/
+│   └── digital-samba/
 │
 ├── templates/               # Remotion project templates
 │   ├── product-demo/
@@ -520,7 +520,7 @@ python tools/music_gen.py --preset corporate-bg --duration 120 --output music.mp
 
 # Image generation
 python tools/flux2.py --prompt "A sunset over mountains" --cloud modal
-python tools/flux2.py --preset title-bg --brand studio-eylon --cloud modal
+python tools/flux2.py --preset title-bg --brand digital-samba --cloud modal
 
 # Video generation
 python tools/ltx2.py --prompt "A sunset over the ocean, cinematic" --cloud modal
