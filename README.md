@@ -42,7 +42,7 @@ cp .env.example .env
 npx ts-node --compiler-options '{"module":"commonjs"}' tools/server.ts
 ```
 
-Open http://localhost:3333 — fill the form, upload assets, generate MP4.
+Open http://localhost:3333 - fill the form, upload assets, generate MP4.
 
 ### Option B: Claude Code Workflow
 
@@ -67,7 +67,7 @@ npx ts-node --compiler-options '{"module":"commonjs"}' tools/generate-video.ts e
 > ```bash
 > cd examples/hello-world && npm install && npm run render
 > ```
-> No API keys needed — outputs an MP4 immediately.
+> No API keys needed - outputs an MP4 immediately.
 
 **Requirements:** [Node.js](https://nodejs.org/) 18+, [Python](https://python.org/) 3.9+ (for voiceover/AI tools). [Claude Code](https://docs.anthropic.com/en/docs/claude-code) recommended. FFmpeg optional.
 
@@ -75,19 +75,19 @@ npx ts-node --compiler-options '{"module":"commonjs"}' tools/generate-video.ts e
 
 ## About
 
-> This project started as a fork of [Digital Samba's claude-code-video-toolkit](https://github.com/digitalsamba/claude-code-video-toolkit) — an open-source AI video workspace for Claude Code. We took that foundation and built significantly on top of it:
+> This project started as a fork of [Digital Samba's claude-code-video-toolkit](https://github.com/digitalsamba/claude-code-video-toolkit) - an open-source AI video workspace for Claude Code. We took that foundation and built significantly on top of it:
 >
 > - **Web UI** with a complete form-based workflow, file uploads, voice preview, and video gallery
 > - **Config-driven pipeline** that generates full Remotion projects from JSON
 > - **13 scene types** with animated entrances, themed styling, and RTL support
-> - **Image and video upload integration** — assets flow automatically into scenes
+> - **Image and video upload integration** - assets flow automatically into scenes
 > - **Gallery management** with playback, download, and deletion
 > - **Hebrew/Arabic RTL** support across all components
 > - **Edge TTS voiceover** with 24+ voices built into the pipeline
 >
 > The original toolkit's skills, commands, templates, cloud GPU tools, and brand system are all still here and fully functional. We added the web interface and generation engine to make it accessible without needing Claude Code.
 >
-> **[Studio Eylon](https://www.meylon.co.il)** — AI-powered creative tools.
+> **[Studio Eylon](https://www.meylon.co.il)** - AI-powered creative tools.
 >
 > Credit to the Digital Samba team for the excellent foundation this is built on.
 
@@ -99,11 +99,11 @@ The web interface at `localhost:3333` provides a complete video creation experie
 
 ### Form Tabs
 
-1. **Project** — name, brand selection, video type, product info (name, tagline, website)
-2. **Visual** — text direction (LTR/RTL), background variant, transition style, animation speed, overlays (vignette, film grain, watermark)
-3. **Audio** — voiceover toggle with 24+ voices (including Hebrew/Arabic), speech rate, background music, SFX
-4. **Scenes** — add/remove scenes with type-specific fields, drag-and-drop reorder
-5. **Media & Assets** — drag-and-drop upload for logo, images, and videos
+1. **Project** - name, brand selection, video type, product info (name, tagline, website)
+2. **Visual** - text direction (LTR/RTL), background variant, transition style, animation speed, overlays (vignette, film grain, watermark)
+3. **Audio** - voiceover toggle with 24+ voices (including Hebrew/Arabic), speech rate, background music, SFX
+4. **Scenes** - add/remove scenes with type-specific fields, drag-and-drop reorder
+5. **Media & Assets** - drag-and-drop upload for logo, images, and videos
 
 ### Gallery
 
@@ -118,9 +118,9 @@ Form submit → Upload assets → Resolve config → Compile Remotion project �
 ```
 
 Uploaded files are automatically wired into the video:
-- **Logo** &rarr; watermark overlay + scene logos
-- **Images** &rarr; auto-assigned to `image` scenes
-- **Videos** &rarr; auto-assigned to `demo` scenes
+- **Logo** -> watermark overlay + scene logos
+- **Images** -> auto-assigned to `image` scenes
+- **Videos** -> auto-assigned to `demo` scenes
 
 ### API Endpoints
 
@@ -158,11 +158,11 @@ Uploaded files are automatically wired into the video:
 
 ### Image Scene Layouts
 
-- **`fullscreen`** — full-bleed image with Ken Burns effect + text overlay at bottom
-- **`contain`** — centered image in rounded frame with headline and caption
-- **`split`** — image on one side, text on the other (flips in RTL)
+- **`fullscreen`** - full-bleed image with Ken Burns effect + text overlay at bottom
+- **`contain`** - centered image in rounded frame with headline and caption
+- **`split`** - image on one side, text on the other (flips in RTL)
 
-Any scene can also have a `backgroundImage` — renders as a full-bleed background behind the scene content with a dark overlay for readability.
+Any scene can also have a `backgroundImage` - renders as a full-bleed background behind the scene content with a dark overlay for readability.
 
 ---
 
@@ -213,28 +213,28 @@ Claude Code has deep knowledge in:
 
 | Skill | Description |
 |-------|-------------|
-| **remotion** | React-based video framework — compositions, animations, rendering |
-| **elevenlabs** | AI audio — text-to-speech, voice cloning, music, sound effects |
-| **ffmpeg** | Media processing — format conversion, compression, resizing |
-| **playwright-recording** | Browser automation — record demos as video |
+| **remotion** | React-based video framework - compositions, animations, rendering |
+| **elevenlabs** | AI audio - text-to-speech, voice cloning, music, sound effects |
+| **ffmpeg** | Media processing - format conversion, compression, resizing |
+| **playwright-recording** | Browser automation - record demos as video |
 | **frontend-design** | Visual design refinement for distinctive, production-grade aesthetics |
-| **qwen-edit** | AI image editing — prompting patterns and best practices |
-| **acestep** | AI music generation — prompts, lyrics, scene presets, video integration |
-| **ltx2** | AI video generation — text-to-video, image-to-video clips, prompting guide |
-| **runpod** | Cloud GPU — setup, Docker images, endpoint management, costs |
+| **qwen-edit** | AI image editing - prompting patterns and best practices |
+| **acestep** | AI music generation - prompts, lyrics, scene presets, video integration |
+| **ltx2** | AI video generation - text-to-video, image-to-video clips, prompting guide |
+| **runpod** | Cloud GPU - setup, Docker images, endpoint management, costs |
 
 ### Commands
 
 | Command | Description |
 |---------|-------------|
-| `/setup` | First-time setup — cloud GPU, file transfer, voice, prerequisites |
-| `/video` | Video projects — list, resume, or create new |
+| `/setup` | First-time setup - cloud GPU, file transfer, voice, prerequisites |
+| `/video` | Video projects - list, resume, or create new |
 | `/scene-review` | Scene-by-scene review in Remotion Studio |
 | `/design` | Focused design refinement session for a scene |
-| `/brand` | Brand profiles — list, edit, or create new |
+| `/brand` | Brand profiles - list, edit, or create new |
 | `/template` | List available templates or create new ones |
 | `/skills` | List installed skills or create new ones |
-| `/contribute` | Share improvements — issues, PRs, examples |
+| `/contribute` | Share improvements - issues, PRs, examples |
 | `/record-demo` | Record browser interactions with Playwright |
 | `/generate-voiceover` | Generate AI voiceover from a script |
 | `/redub` | Redub existing video with a different voice |
@@ -247,9 +247,9 @@ Claude Code has deep knowledge in:
 
 Pre-built video structures in `templates/`:
 
-- **product-demo** — Marketing videos with dark tech aesthetic, stats, CTA
-- **sprint-review** — Sprint review videos with demos, stats, and voiceover
-- **sprint-review-v2** — Composable scene-based sprint review with modular architecture
+- **product-demo** - Marketing videos with dark tech aesthetic, stats, CTA
+- **sprint-review** - Sprint review videos with demos, stats, and voiceover
+- **sprint-review-v2** - Composable scene-based sprint review with modular architecture
 
 ### Brand Profiles
 
@@ -295,9 +295,9 @@ Create your own with `/brand` or by adding files to `brands/your-brand/`.
 
 ### Voiceover
 
-- **Edge TTS** (default, free) — 24+ voices including Hebrew and Arabic
-- **ElevenLabs** (premium, optional) — requires API key in `.env`
-- **Qwen3-TTS** (cloud GPU) — self-hosted via Modal/RunPod
+- **Edge TTS** (default, free) - 24+ voices including Hebrew and Arabic
+- **ElevenLabs** (premium, optional) - requires API key in `.env`
+- **Qwen3-TTS** (cloud GPU) - self-hosted via Modal/RunPod
 - Per-scene narration text in the form or config
 - Adjustable speech rate
 
@@ -585,7 +585,7 @@ ELEVENLABS_API_KEY=
 ELEVENLABS_VOICE_ID=
 ```
 
-All keys are **optional**. The toolkit works without any of them — basic video creation uses Edge TTS (free) and synthetic audio.
+All keys are **optional**. The toolkit works without any of them - basic video creation uses Edge TTS (free) and synthetic audio.
 
 ---
 
@@ -595,15 +595,15 @@ All keys are **optional**. The toolkit works without any of them — basic video
 /video → Script → Assets → Scene Review → Design → Audio → Preview → Render
 ```
 
-1. **Create project** — Run `/video`, choose template and brand
-2. **Review script** — Edit voiceover script to plan content and assets
-3. **Gather assets** — Record demos with `/record-demo` or upload media
-4. **Scene review** — Run `/scene-review` to verify visuals in Remotion Studio
-5. **Design refinement** — Use `/design` to improve visuals
-6. **Generate audio** — AI voiceover with `/generate-voiceover`
-7. **Preview** — `npm run studio` for live preview
-8. **Iterate** — Adjust timing, styling, content
-9. **Render** — `npm run render` for final MP4
+1. **Create project** - Run `/video`, choose template and brand
+2. **Review script** - Edit voiceover script to plan content and assets
+3. **Gather assets** - Record demos with `/record-demo` or upload media
+4. **Scene review** - Run `/scene-review` to verify visuals in Remotion Studio
+5. **Design refinement** - Use `/design` to improve visuals
+6. **Generate audio** - AI voiceover with `/generate-voiceover`
+7. **Preview** - `npm run studio` for live preview
+8. **Iterate** - Adjust timing, styling, content
+9. **Render** - `npm run render` for final MP4
 
 ---
 
@@ -634,7 +634,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
 
 ## License
 
-[AGPL v3](LICENSE) &copy; 2024-2026 [Studio Eylon](https://www.meylon.co.il). Originally based on [Digital Samba's claude-code-video-toolkit](https://github.com/digitalsamba/claude-code-video-toolkit).
+[AGPL v3](LICENSE) (c) 2024-2026 [Studio Eylon](https://www.meylon.co.il). Originally based on [Digital Samba's claude-code-video-toolkit](https://github.com/digitalsamba/claude-code-video-toolkit).
 
 ---
 
