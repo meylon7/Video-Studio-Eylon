@@ -542,8 +542,18 @@ function handleUpload(type, input) {
         });
         const data = await resp.json();
         if (type === 'logo') { uploadedFiles.logo = data.path; showUploadedFile('logoPreview', data, type); }
-        else if (type === 'images') { uploadedFiles.images.push(data.path); showUploadedFile('imagesPreview', data, type); }
-        else { uploadedFiles.videos.push(data.path); showUploadedFile('videosPreview', data, type); }
+        else if (type === 'images') {
+          uploadedFiles.images.push(data.path);
+          showUploadedFile('imagesPreview', data, type);
+          // Auto-add image scene for each uploaded image
+          addScene('image', { headline: '', layout: 'fullscreen', duration: 5 });
+        }
+        else {
+          uploadedFiles.videos.push(data.path);
+          showUploadedFile('videosPreview', data, type);
+          // Auto-add demo scene for each uploaded video
+          addScene('demo', { label: file.name.replace(/\.[^.]+$/, ''), demoType: 'browser', duration: 8 });
+        }
       } catch (err) { console.error('Upload failed:', err); }
     };
     reader.readAsDataURL(file);
@@ -555,7 +565,13 @@ function showUploadedFile(containerId, data, type) {
   const c = document.getElementById(containerId);
   const el = document.createElement('div'); el.className = 'uploaded-file';
   if (data.thumbnail) el.innerHTML = `<img class="uploaded-thumb" src="${data.thumbnail}" /> `;
-  el.innerHTML += `${data.name} <span class="remove" onclick="this.parentElement.remove()">&times;</span>`;
+  el.innerHTML += `${data.name} <span class="remove">&times;</span>`;
+  el.querySelector('.remove').onclick = () => {
+    el.remove();
+    if (type === 'logo') uploadedFiles.logo = null;
+    else if (type === 'images') uploadedFiles.images = uploadedFiles.images.filter(p => p !== data.path);
+    else uploadedFiles.videos = uploadedFiles.videos.filter(p => p !== data.path);
+  };
   c.appendChild(el);
 }
 
