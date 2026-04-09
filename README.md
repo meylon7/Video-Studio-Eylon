@@ -10,6 +10,8 @@ Created by [Studio Eylon](https://www.meylon.co.il).
 
 ![Demo](docs/screenshots/demo.gif)
 
+If you find this useful, [give it a star](https://github.com/meylon7/Video-Studio-Eylon) - it helps others discover the project.
+
 ## Use Cases
 
 - **Product Demo** - launch videos, feature walkthroughs, landing page heroes
@@ -40,7 +42,7 @@ npm install
 pip install edge-tts
 
 # (Optional) Copy environment template for cloud GPU features
-cp .env.example .env
+cp .env.example .env          # Windows: copy .env.example .env
 ```
 
 ### Option A: Web UI
