@@ -359,7 +359,7 @@ export const ConfigDrivenVideo: React.FC = () => {
     <ThemeProvider theme={{...defaultTheme, direction: visual.direction || 'ltr'}}>
       <AbsoluteFill
         style={{
-          backgroundColor: defaultTheme.colors.bgLight,
+          backgroundColor: visual.background === 'dark' || visual.background === 'tech' ? defaultTheme.colors.bgDark : defaultTheme.colors.bgLight,
           fontFamily: defaultTheme.fonts.primary,
           direction: visual.direction || 'ltr',
           textAlign: visual.direction === 'rtl' ? 'right' : 'left',

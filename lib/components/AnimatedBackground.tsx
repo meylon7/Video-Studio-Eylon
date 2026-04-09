@@ -58,7 +58,7 @@ const LightVariant: React.FC<LightVariantProps> = ({ frame, theme, variant, show
     switch (variant) {
       case 'tech':
         return {
-          bg: theme.colors.bgLight,
+          bg: theme.colors.bgDark,
           shape1: hexToRgba(primary, 0.04),
           shape2: hexToRgba(secondary, 0.03),
           shape3: hexToRgba(theme.colors.primaryLight, 0.02),
@@ -190,7 +190,7 @@ const DarkVariant: React.FC<DarkVariantProps> = ({ frame, theme, shapeCount, sho
   const accent = theme.colors.accent || theme.colors.primaryLight;
 
   return (
-    <AbsoluteFill style={{ overflow: 'hidden' }}>
+    <AbsoluteFill style={{ overflow: 'hidden', backgroundColor: theme.colors.bgDark }}>
       {/* Gradient overlay */}
       <div
         style={{
