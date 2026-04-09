@@ -61,8 +61,11 @@
     .scene-card {
       background: #020617; border: 1px solid #1e293b; border-radius: 10px;
       padding: 14px; min-width: 280px; max-width: 320px; flex-shrink: 0; position: relative;
+      cursor: grab; user-select: none; transition: transform 0.15s, opacity 0.15s, border-color 0.15s;
     }
     .scene-card:hover { border-color: #334155; }
+    .scene-card.dragging { opacity: 0.4; border-color: #ea580c; transform: scale(0.95); }
+    .scene-card.drag-over { border-color: #ea580c; border-style: dashed; }
     .scene-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .scene-type { font-size: 11px; font-weight: 600; color: #ea580c; text-transform: uppercase; letter-spacing: 0.5px; }
     .remove-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 16px; opacity: 0.5; }
@@ -494,6 +497,8 @@ function renderScenes() {
     const fields = SF[s.type] || [];
     const displayType = s.type === 'demo' ? 'video' : s.type;
     const card = document.createElement('div'); card.className = 'scene-card';
+    card.draggable = true;
+    card.dataset.idx = idx;
     card.innerHTML = `<div class="scene-header"><span class="scene-type">${idx+1}. ${displayType}</span><button class="remove-btn" onclick="removeScene(${idx})">&times;</button></div>` +
       fields.map(f => {
         const val = s.data[f.k] ?? f.v ?? '';
@@ -546,6 +551,38 @@ function renderScenes() {
       };
       input.click();
     };
+  });
+
+  // Drag & drop reorder
+  let dragIdx = null;
+  c.querySelectorAll('.scene-card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      // Don't drag when interacting with form fields
+      if (['INPUT','TEXTAREA','SELECT','BUTTON'].includes(e.target.tagName)) { e.preventDefault(); return; }
+      dragIdx = +card.dataset.idx;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      c.querySelectorAll('.scene-card').forEach(c => c.classList.remove('drag-over'));
+      dragIdx = null;
+    });
+    card.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      card.classList.add('drag-over');
+    });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      const dropIdx = +card.dataset.idx;
+      if (dragIdx !== null && dragIdx !== dropIdx) {
+        const moved = scenes.splice(dragIdx, 1)[0];
+        scenes.splice(dropIdx, 0, moved);
+        renderScenes();
+      }
+    });
   });
 }
 
