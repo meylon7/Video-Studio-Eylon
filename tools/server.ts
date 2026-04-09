@@ -84,9 +84,14 @@ app.delete('/api/projects/:name', (req, res) => {
   if (!fs.existsSync(projectDir)) {
     return res.status(404).json({ error: 'Project not found' });
   }
-  fs.rmSync(projectDir, { recursive: true, force: true });
-  console.log(`Deleted project: ${projectName}`);
-  res.json({ ok: true, deleted: projectName });
+  try {
+    fs.rmSync(projectDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 500 });
+    console.log(`Deleted project: ${projectName}`);
+    res.json({ ok: true, deleted: projectName });
+  } catch (err: any) {
+    console.error(`Failed to delete ${projectName}:`, err.message);
+    res.status(500).json({ error: `Could not delete: ${err.message}` });
+  }
 });
 
 // Allowed MIME types for upload
