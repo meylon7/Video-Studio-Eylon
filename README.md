@@ -8,10 +8,7 @@ Created by [Studio Eylon](https://www.meylon.co.il).
 
 ## Demo
 
-https://github.com/user-attachments/assets/video-studio-eylon.mp4
-
-> After uploading the video to GitHub, replace the URL above with the actual asset link.
-> To upload: Edit this README on GitHub, drag the MP4 into the editor, and copy the generated URL.
+https://github.com/meylon7/Video-Studio-Eylon/raw/main/assets/video-studio-eylon.mp4
 
 ## Screenshots
 
