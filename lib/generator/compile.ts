@@ -127,23 +127,46 @@ export function compileProject(config: ResolvedConfig, outputDir: string, upload
       });
     }
 
-    // Wire uploaded images into image scenes or as backgroundImage on other scenes
+    // Resolve any scene content that references /uploads/ paths
+    config.scenes.forEach(scene => {
+      // Image scenes: user-selected or auto-assign
+      if (scene.type === 'image') {
+        if (scene.content.imageSrc && scene.content.imageSrc.includes('/uploads/')) {
+          const filename = path.basename(scene.content.imageSrc);
+          const src = path.join(uploadsDir, filename);
+          if (fs.existsSync(src)) {
+            fs.copyFileSync(src, path.join(publicDir, 'images', filename));
+          }
+          scene.content.imageSrc = 'images/' + filename;
+        }
+      }
+      // Demo scenes: user-selected or auto-assign
+      if (scene.type === 'demo') {
+        if (scene.content.videoFile && scene.content.videoFile.includes('/uploads/')) {
+          const filename = path.basename(scene.content.videoFile);
+          const src = path.join(uploadsDir, filename);
+          if (fs.existsSync(src)) {
+            fs.copyFileSync(src, path.join(publicDir, 'demos', filename));
+          }
+          scene.content.videoFile = 'demos/' + filename;
+        }
+      }
+    });
+
+    // Auto-wire remaining: images without imageSrc, demos without videoFile
     if (uploads?.images?.length) {
       let imgIdx = 0;
-      // First pass: wire into image scenes
       config.scenes.forEach(scene => {
-        if (scene.type === 'image' && !scene.content.imageSrc) {
-          const imgFile = imgIdx < uploads.images.length
-            ? path.basename(uploads.images[imgIdx++])
-            : path.basename(uploads.images[0]);
-          scene.content.imageSrc = 'images/' + imgFile;
+        if (scene.type === 'image' && !scene.content.imageSrc && imgIdx < uploads.images.length) {
+          scene.content.imageSrc = 'images/' + path.basename(uploads.images[imgIdx++]);
         }
       });
-      // Second pass: if there are remaining images and no image scenes were found,
-      // assign as backgroundImage to scenes that explicitly request it via content.backgroundImage = true
+    }
+    if (uploads?.videos?.length) {
+      let vidIdx = 0;
       config.scenes.forEach(scene => {
-        if (scene.content.backgroundImage === true && imgIdx < uploads.images.length) {
-          scene.content.backgroundImage = 'images/' + path.basename(uploads.images[imgIdx++]);
+        if (scene.type === 'demo' && !scene.content.videoFile && vidIdx < uploads.videos.length) {
+          scene.content.videoFile = 'demos/' + path.basename(uploads.videos[vidIdx++]);
         }
       });
     }

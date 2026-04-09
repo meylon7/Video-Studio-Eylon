@@ -479,18 +479,20 @@ const SF = {
     { k:'duration', l:'Sec', t:'num', v:10 },
   ],
   demo: [
-    { k:'label', l:'Title', t:'text', p:'Product Demo' },
+    { k:'videoFile', l:'Video', t:'select-video', tip:'Select uploaded video' },
+    { k:'label', l:'Title', t:'text', p:'Optional title above video' },
     { k:'demoType', l:'Type', t:'text', p:'browser / terminal / raw', v:'browser', tip:'Window chrome style' },
     { k:'caption', l:'Caption', t:'text', p:'Description below video' },
     { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
-    { k:'duration', l:'Sec', t:'num', v:10, tip:'Upload video in Media tab' },
+    { k:'duration', l:'Sec', t:'num', v:10 },
   ],
   image: [
+    { k:'imageSrc', l:'Image', t:'select-image', tip:'Select uploaded image' },
     { k:'headline', l:'Headline', t:'text', p:'Optional title' },
     { k:'caption', l:'Caption', t:'text', p:'Optional caption' },
-    { k:'layout', l:'Layout', t:'text', p:'fullscreen / contain / split', v:'contain', tip:'How image is displayed' },
+    { k:'layout', l:'Layout', t:'text', p:'fullscreen / contain / split', v:'fullscreen', tip:'How image is displayed' },
     { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
-    { k:'duration', l:'Sec', t:'num', v:6, tip:'Upload image in Media tab' },
+    { k:'duration', l:'Sec', t:'num', v:6 },
   ],
 };
 
@@ -506,14 +508,23 @@ function renderScenes() {
       fields.map(f => {
         const val = s.data[f.k] ?? f.v ?? '';
         const tipH = f.tip ? `<span class="tip" data-tip="${f.tip}">?</span> ` : '';
+        if (f.t === 'select-image') {
+          const opts = uploadedFiles.images.map((p,i) => `<option value="${p}" ${val===p?'selected':''}>${p.split('/').pop()}</option>`).join('');
+          return `<div class="field"><label>${tipH}${f.l}</label><select data-s="${idx}" data-k="${f.k}"><option value="">-- select image --</option>${opts}</select></div>`;
+        }
+        if (f.t === 'select-video') {
+          const opts = uploadedFiles.videos.map((p,i) => `<option value="${p}" ${val===p?'selected':''}>${p.split('/').pop()}</option>`).join('');
+          return `<div class="field"><label>${tipH}${f.l}</label><select data-s="${idx}" data-k="${f.k}"><option value="">-- select video --</option>${opts}</select></div>`;
+        }
         if (f.t === 'ta') return `<div class="field"><label>${tipH}${f.l}</label><textarea data-s="${idx}" data-k="${f.k}" placeholder="${f.p||''}" rows="2">${val}</textarea></div>`;
         if (f.t === 'num') return `<div class="field"><label>${tipH}${f.l}</label><input type="number" data-s="${idx}" data-k="${f.k}" value="${val}" min="1" max="60"/></div>`;
         return `<div class="field"><label>${tipH}${f.l}</label><input type="text" data-s="${idx}" data-k="${f.k}" value="${val}" placeholder="${f.p||''}"/></div>`;
       }).join('');
     c.appendChild(card);
   });
-  c.querySelectorAll('input,textarea').forEach(el => {
-    el.addEventListener('input', e => { scenes[+e.target.dataset.s].data[e.target.dataset.k] = e.target.type==='number' ? +e.target.value : e.target.value; });
+  c.querySelectorAll('input,textarea,select').forEach(el => {
+    const evt = el.tagName === 'SELECT' ? 'change' : 'input';
+    el.addEventListener(evt, e => { scenes[+e.target.dataset.s].data[e.target.dataset.k] = e.target.type==='number' ? +e.target.value : e.target.value; });
   });
 }
 
@@ -545,14 +556,14 @@ function handleUpload(type, input) {
         else if (type === 'images') {
           uploadedFiles.images.push(data.path);
           showUploadedFile('imagesPreview', data, type);
-          // Auto-add image scene for each uploaded image
-          addScene('image', { headline: '', layout: 'fullscreen', duration: 5 });
+          // Auto-add image scene with this image pre-selected
+          addScene('image', { imageSrc: data.path, headline: '', layout: 'fullscreen', duration: 5 });
         }
         else {
           uploadedFiles.videos.push(data.path);
           showUploadedFile('videosPreview', data, type);
-          // Auto-add demo scene for each uploaded video
-          addScene('demo', { label: file.name.replace(/\.[^.]+$/, ''), demoType: 'browser', duration: 8 });
+          // Auto-add demo scene with this video pre-selected
+          addScene('demo', { videoFile: data.path, label: '', demoType: 'browser', duration: 8 });
         }
       } catch (err) { console.error('Upload failed:', err); }
     };
@@ -691,7 +702,7 @@ async function loadGallery() {
       p.videos.forEach(v => {
         const url = `/projects/${p.name}/remotion/out/${v}`;
         const card = document.createElement('div'); card.className = 'gallery-card';
-        card.innerHTML = `<video src="${url}" preload="metadata" muted></video><div class="card-body"><div class="card-info"><div class="card-title">${v.replace('.mp4','')}</div><div class="card-meta">${p.name}</div></div><button class="delete-btn" title="Delete" data-project="${p.name}">&times;</button></div>`;
+        card.innerHTML = `<video src="${url}" preload="metadata" muted></video><div class="card-body"><div class="card-info"><div class="card-title">${p.name}</div></div><button class="delete-btn" title="Delete" data-project="${p.name}">&times;</button></div>`;
         card.querySelector('video').onclick = () => openPlayer(url);
         card.querySelector('.delete-btn').onclick = async (e) => {
           e.stopPropagation();
