@@ -6,9 +6,15 @@ An AI-powered video creation toolkit built on top of [Digital Samba's claude-cod
 
 Created by [Studio Eylon](https://www.meylon.co.il).
 
-<!-- Add a screenshot or demo GIF here for visual impact:
-![Studio Eylon Video Toolkit](docs/screenshot.png)
--->
+## Screenshots
+
+| Scenes | Project |
+| ------ | ------- |
+| ![Scenes](docs/screenshots/scenes-tab.png) | ![Project](docs/screenshots/project-tab.png) |
+
+| Visual | Audio |
+| ------ | ----- |
+| ![Visual](docs/screenshots/visual-tab.png) | ![Audio](docs/screenshots/audio-tab.png) |
 
 ## Quick Start
 
