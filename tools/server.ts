@@ -85,7 +85,12 @@ app.delete('/api/projects/:name', (req, res) => {
     return res.status(404).json({ error: 'Project not found' });
   }
   try {
-    fs.rmSync(projectDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 500 });
+    // Use OS-level delete on Windows to handle locked files
+    if (process.platform === 'win32') {
+      require('child_process').execSync(`rmdir /s /q "${projectDir.replace(/\//g, '\\')}"`, { stdio: 'pipe' });
+    } else {
+      fs.rmSync(projectDir, { recursive: true, force: true });
+    }
     console.log(`Deleted project: ${projectName}`);
     res.json({ ok: true, deleted: projectName });
   } catch (err: any) {
