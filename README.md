@@ -8,7 +8,7 @@ Created by [Studio Eylon](https://www.meylon.co.il).
 
 ## Demo
 
-https://github.com/meylon7/Video-Studio-Eylon/raw/main/assets/video-studio-eylon.mp4
+https://github.com/meylon7/Video-Studio-Eylon/raw/main/assets/demo.mp4
 
 ## Screenshots
 

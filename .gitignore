@@ -30,6 +30,7 @@ build/
 out/
 *.mp4
 !docs/screenshots/*.mp4
+!assets/demo.mp4
 *.webm
 *.gif
 *.mov
