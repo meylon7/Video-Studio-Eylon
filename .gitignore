@@ -33,6 +33,7 @@ out/
 !assets/demo.mp4
 *.webm
 *.gif
+!docs/screenshots/*.gif
 *.mov
 
 # Remotion

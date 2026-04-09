@@ -8,7 +8,7 @@ Created by [Studio Eylon](https://www.meylon.co.il).
 
 ## Demo
 
-<video src="assets/demo.mp4" controls width="100%"></video>
+![Demo](docs/screenshots/demo.gif)
 
 ## Screenshots
 
