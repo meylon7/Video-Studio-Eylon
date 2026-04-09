@@ -328,7 +328,7 @@
         <button class="btn btn-secondary btn-sm" onclick="addScene('spotlight')">+ Spotlight</button>
         <button class="btn btn-secondary btn-sm" onclick="addScene('comparison')">+ Comparison</button>
         <button class="btn btn-secondary btn-sm" onclick="addScene('testimonial')">+ Testimonial</button>
-        <button class="btn btn-secondary btn-sm" onclick="addScene('demo')">+ Demo</button>
+        <button class="btn btn-secondary btn-sm" onclick="addScene('demo')">+ Video</button>
         <button class="btn btn-secondary btn-sm" onclick="addScene('image')">+ Image</button>
       </div>
     </div>
@@ -492,8 +492,9 @@ function renderScenes() {
   const c = document.getElementById('scenesContainer'); c.innerHTML = '';
   scenes.forEach((s, idx) => {
     const fields = SF[s.type] || [];
+    const displayType = s.type === 'demo' ? 'video' : s.type;
     const card = document.createElement('div'); card.className = 'scene-card';
-    card.innerHTML = `<div class="scene-header"><span class="scene-type">${idx+1}. ${s.type}</span><button class="remove-btn" onclick="removeScene(${idx})">&times;</button></div>` +
+    card.innerHTML = `<div class="scene-header"><span class="scene-type">${idx+1}. ${displayType}</span><button class="remove-btn" onclick="removeScene(${idx})">&times;</button></div>` +
       fields.map(f => {
         const val = s.data[f.k] ?? f.v ?? '';
         const tipH = f.tip ? `<span class="tip" data-tip="${f.tip}">?</span> ` : '';
