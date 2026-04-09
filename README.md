@@ -6,6 +6,10 @@ An AI-powered video creation toolkit built on top of [Digital Samba's claude-cod
 
 Created by [Studio Eylon](https://www.meylon.co.il).
 
+<!-- Add a screenshot or demo GIF here for visual impact:
+![Studio Eylon Video Toolkit](docs/screenshot.png)
+-->
+
 ## Quick Start
 
 ```bash
@@ -248,7 +252,7 @@ brands/my-brand/
 └── assets/       # Logo, backgrounds
 ```
 
-Included brands: `default`, `digital-samba` (Studio Eylon)
+Included brands: `default`, `digital-samba`
 
 Create your own with `/brand` or by adding files to `brands/your-brand/`.
 
@@ -450,7 +454,7 @@ claude-code-video-toolkit/
 ├── SPEC.md                  # Project specification
 ├── CONTRIBUTING.md
 ├── CONTRIBUTORS.md
-└── LICENSE                  # MIT
+└── LICENSE                  # AGPL v3
 ```
 
 ---
