@@ -10,6 +10,13 @@ Created by [Studio Eylon](https://www.meylon.co.il).
 
 ![Demo](docs/screenshots/demo.gif)
 
+## Use Cases
+
+- **Product Demo** - launch videos, feature walkthroughs, landing page heroes
+- **Course Promo** - intro/outro videos for online courses and webinars
+- **Onboarding Video** - welcome sequences, tool setup guides, team intros
+- **Social Ad** - short branded clips for LinkedIn, YouTube, Instagram
+
 ## Screenshots
 
 | Scenes | Project |
