@@ -708,12 +708,15 @@ async function loadGallery() {
         card.innerHTML = `<video src="${url}" preload="metadata" muted></video><div class="card-body"><div class="card-info"><div class="card-title">${p.name}</div></div><button class="delete-btn" title="Delete" data-project="${p.name}">&times;</button></div>`;
         card.querySelector('video').onclick = () => openPlayer(url);
         card.querySelector('.delete-btn').onclick = async (e) => {
+          e.preventDefault();
           e.stopPropagation();
-          if (!confirm(`Delete project "${p.name}"?`)) return;
+          if (!confirm(`Delete "${p.name}"?`)) return;
           try {
-            await fetch(`${API}/api/projects/${p.name}`, { method: 'DELETE' });
-            loadGallery();
-          } catch (err) { console.error(err); }
+            const resp = await fetch(`${API}/api/projects/${encodeURIComponent(p.name)}`, { method: 'DELETE' });
+            const result = await resp.json();
+            if (result.ok) { loadGallery(); }
+            else { alert('Delete failed: ' + (result.error || 'Unknown error')); }
+          } catch (err) { console.error('Delete error:', err); alert('Delete failed: ' + err.message); }
         };
         grid.appendChild(card);
       });
