@@ -83,6 +83,14 @@
     }
     .uploaded-file .remove { cursor: pointer; color: #ef4444; margin-right: -4px; }
     .uploaded-thumb { width: 48px; height: 36px; object-fit: cover; border-radius: 4px; }
+    .scene-upload-zone {
+      border: 2px dashed #1e293b; border-radius: 8px; padding: 10px; text-align: center;
+      cursor: pointer; transition: all 0.2s; color: #475569; font-size: 12px;
+      display: flex; align-items: center; gap: 8px; justify-content: center;
+    }
+    .scene-upload-zone:hover { border-color: #ea580c; color: #ea580c; }
+    .scene-upload-zone .upload-name { color: #94a3b8; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+    .scene-upload-zone .uploaded-thumb { width: 40px; height: 30px; }
 
     /* Generate bar */
     .generate-bar {
@@ -156,7 +164,6 @@
     <div class="form-tab" onclick="showTab('visual')">Visual</div>
     <div class="form-tab" onclick="showTab('audio')">Audio</div>
     <div class="form-tab" onclick="showTab('scenes')">Scenes</div>
-    <div class="form-tab" onclick="showTab('media')">Media &amp; Assets</div>
   </div>
 
   <div class="form-panels">
@@ -194,6 +201,14 @@
         <div class="field">
           <label><span class="tip" data-tip="URL shown in CTA scene">?</span> Website</label>
           <input type="text" id="productWebsite" placeholder="studioeylon.com" />
+        </div>
+        <div class="field">
+          <label><span class="tip" data-tip="Brand logo. Shown in watermark. PNG/SVG recommended.">?</span> Logo</label>
+          <div class="upload-zone" id="logoUpload" onclick="document.getElementById('logoFile').click()" style="padding:12px;font-size:12px;">
+            Drop logo or click
+          </div>
+          <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="handleUpload('logo', this)" />
+          <div class="uploaded-files" id="logoPreview"></div>
         </div>
       </div>
     </div>
@@ -318,35 +333,9 @@
       </div>
     </div>
 
-    <!-- MEDIA -->
-    <div class="form-panel" id="panel-media">
-      <div class="form-grid">
-        <div class="field">
-          <label><span class="tip" data-tip="Brand logo. Shown in title scene and watermark. PNG/SVG recommended.">?</span> Logo</label>
-          <div class="upload-zone" id="logoUpload" onclick="document.getElementById('logoFile').click()">
-            Drop logo here or click to browse
-          </div>
-          <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="handleUpload('logo', this)" />
-          <div class="uploaded-files" id="logoPreview"></div>
-        </div>
-        <div class="field">
-          <label><span class="tip" data-tip="Background images or product screenshots. Used in demo scenes.">?</span> Images</label>
-          <div class="upload-zone" id="imagesUpload" onclick="document.getElementById('imagesFile').click()">
-            Drop images here or click to browse
-          </div>
-          <input type="file" id="imagesFile" accept="image/*" multiple style="display:none" onchange="handleUpload('images', this)" />
-          <div class="uploaded-files" id="imagesPreview"></div>
-        </div>
-        <div class="field form-wide">
-          <label><span class="tip" data-tip="Video clips (screen recordings, demos, B-roll). Used in demo scenes. MP4/WebM.">?</span> Video Clips</label>
-          <div class="upload-zone" id="videosUpload" onclick="document.getElementById('videosFile').click()">
-            Drop video clips here or click to browse
-          </div>
-          <input type="file" id="videosFile" accept="video/*" multiple style="display:none" onchange="handleUpload('videos', this)" />
-          <div class="uploaded-files" id="videosPreview"></div>
-        </div>
-      </div>
-    </div>
+    <!-- Hidden file inputs for scene-level uploads -->
+    <input type="file" id="sceneImageFile" accept="image/*" style="display:none" />
+    <input type="file" id="sceneVideoFile" accept="video/*" style="display:none" />
 
   </div>
 </div>
@@ -479,7 +468,7 @@ const SF = {
     { k:'duration', l:'Sec', t:'num', v:10 },
   ],
   demo: [
-    { k:'videoFile', l:'Video', t:'select-video', tip:'Select uploaded video' },
+    { k:'videoFile', l:'Video', t:'upload-video' },
     { k:'label', l:'Title', t:'text', p:'Optional title above video' },
     { k:'demoType', l:'Type', t:'text', p:'browser / terminal / raw', v:'browser', tip:'Window chrome style' },
     { k:'caption', l:'Caption', t:'text', p:'Description below video' },
@@ -487,7 +476,7 @@ const SF = {
     { k:'duration', l:'Sec', t:'num', v:10 },
   ],
   image: [
-    { k:'imageSrc', l:'Image', t:'select-image', tip:'Select uploaded image' },
+    { k:'imageSrc', l:'Image', t:'upload-image' },
     { k:'headline', l:'Headline', t:'text', p:'Optional title' },
     { k:'caption', l:'Caption', t:'text', p:'Optional caption' },
     { k:'layout', l:'Layout', t:'text', p:'fullscreen / contain / split', v:'fullscreen', tip:'How image is displayed' },
@@ -508,13 +497,12 @@ function renderScenes() {
       fields.map(f => {
         const val = s.data[f.k] ?? f.v ?? '';
         const tipH = f.tip ? `<span class="tip" data-tip="${f.tip}">?</span> ` : '';
-        if (f.t === 'select-image') {
-          const opts = uploadedFiles.images.map((p,i) => `<option value="${p}" ${val===p?'selected':''}>${p.split('/').pop()}</option>`).join('');
-          return `<div class="field"><label>${tipH}${f.l}</label><select data-s="${idx}" data-k="${f.k}"><option value="">-- select image --</option>${opts}</select></div>`;
-        }
-        if (f.t === 'select-video') {
-          const opts = uploadedFiles.videos.map((p,i) => `<option value="${p}" ${val===p?'selected':''}>${p.split('/').pop()}</option>`).join('');
-          return `<div class="field"><label>${tipH}${f.l}</label><select data-s="${idx}" data-k="${f.k}"><option value="">-- select video --</option>${opts}</select></div>`;
+        if (f.t === 'upload-image' || f.t === 'upload-video') {
+          const isImg = f.t === 'upload-image';
+          const fileName = val ? val.split('/').pop() : '';
+          const preview = val && isImg ? `<img class="uploaded-thumb" src="${val}" />` : '';
+          const label = fileName ? `${preview}<span class="upload-name">${fileName}</span>` : (isImg ? 'Click to add image' : 'Click to add video');
+          return `<div class="field"><label>${f.l}</label><div class="scene-upload-zone" data-s="${idx}" data-k="${f.k}" data-accept="${isImg?'image/*':'video/*'}">${label}</div></div>`;
         }
         if (f.t === 'ta') return `<div class="field"><label>${tipH}${f.l}</label><textarea data-s="${idx}" data-k="${f.k}" placeholder="${f.p||''}" rows="2">${val}</textarea></div>`;
         if (f.t === 'num') return `<div class="field"><label>${tipH}${f.l}</label><input type="number" data-s="${idx}" data-k="${f.k}" value="${val}" min="1" max="60"/></div>`;
@@ -525,6 +513,38 @@ function renderScenes() {
   c.querySelectorAll('input,textarea,select').forEach(el => {
     const evt = el.tagName === 'SELECT' ? 'change' : 'input';
     el.addEventListener(evt, e => { scenes[+e.target.dataset.s].data[e.target.dataset.k] = e.target.type==='number' ? +e.target.value : e.target.value; });
+  });
+  // Scene-level upload zones
+  c.querySelectorAll('.scene-upload-zone').forEach(zone => {
+    zone.onclick = () => {
+      const accept = zone.dataset.accept;
+      const isImg = accept.startsWith('image');
+      const input = document.getElementById(isImg ? 'sceneImageFile' : 'sceneVideoFile');
+      input.onchange = async () => {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const base64 = reader.result.split(',')[1];
+          try {
+            const resp = await fetch(`${API}/api/upload-base64`, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: file.name, data: base64, mime: file.type }),
+            });
+            const data = await resp.json();
+            const sIdx = +zone.dataset.s;
+            const key = zone.dataset.k;
+            scenes[sIdx].data[key] = data.path;
+            if (isImg) uploadedFiles.images.push(data.path);
+            else uploadedFiles.videos.push(data.path);
+            renderScenes();
+          } catch (err) { console.error('Upload failed:', err); }
+        };
+        reader.readAsDataURL(file);
+        input.value = '';
+      };
+      input.click();
+    };
   });
 }
 
@@ -553,18 +573,6 @@ function handleUpload(type, input) {
         });
         const data = await resp.json();
         if (type === 'logo') { uploadedFiles.logo = data.path; showUploadedFile('logoPreview', data, type); }
-        else if (type === 'images') {
-          uploadedFiles.images.push(data.path);
-          showUploadedFile('imagesPreview', data, type);
-          // Auto-add image scene with this image pre-selected
-          addScene('image', { imageSrc: data.path, headline: '', layout: 'fullscreen', duration: 5 });
-        }
-        else {
-          uploadedFiles.videos.push(data.path);
-          showUploadedFile('videosPreview', data, type);
-          // Auto-add demo scene with this video pre-selected
-          addScene('demo', { videoFile: data.path, label: '', demoType: 'browser', duration: 8 });
-        }
       } catch (err) { console.error('Upload failed:', err); }
     };
     reader.readAsDataURL(file);
@@ -574,32 +582,26 @@ function handleUpload(type, input) {
 
 function showUploadedFile(containerId, data, type) {
   const c = document.getElementById(containerId);
+  if (!c) return;
+  c.innerHTML = '';
   const el = document.createElement('div'); el.className = 'uploaded-file';
   if (data.thumbnail) el.innerHTML = `<img class="uploaded-thumb" src="${data.thumbnail}" /> `;
   el.innerHTML += `${data.name} <span class="remove">&times;</span>`;
-  el.querySelector('.remove').onclick = () => {
-    el.remove();
-    if (type === 'logo') uploadedFiles.logo = null;
-    else if (type === 'images') uploadedFiles.images = uploadedFiles.images.filter(p => p !== data.path);
-    else uploadedFiles.videos = uploadedFiles.videos.filter(p => p !== data.path);
-  };
+  el.querySelector('.remove').onclick = () => { el.remove(); uploadedFiles.logo = null; };
   c.appendChild(el);
 }
 
-// Drag & drop
-['logoUpload','imagesUpload','videosUpload'].forEach(id => {
-  const zone = document.getElementById(id);
-  if (!zone) return;
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
-  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-  zone.addEventListener('drop', e => {
-    e.preventDefault(); zone.classList.remove('dragover');
-    const type = id.replace('Upload','').replace('s','');
-    const input = zone.nextElementSibling;
-    input.files = e.dataTransfer.files;
-    handleUpload(id.includes('logo') ? 'logo' : id.includes('image') ? 'images' : 'videos', input);
+// Drag & drop for logo
+const logoZone = document.getElementById('logoUpload');
+if (logoZone) {
+  logoZone.addEventListener('dragover', e => { e.preventDefault(); logoZone.classList.add('dragover'); });
+  logoZone.addEventListener('dragleave', () => logoZone.classList.remove('dragover'));
+  logoZone.addEventListener('drop', e => {
+    e.preventDefault(); logoZone.classList.remove('dragover');
+    document.getElementById('logoFile').files = e.dataTransfer.files;
+    handleUpload('logo', document.getElementById('logoFile'));
   });
-});
+}
 
 // ============================================
 // Build config
