@@ -29,6 +29,7 @@ dist/
 build/
 out/
 *.mp4
+!docs/screenshots/*.mp4
 *.webm
 *.gif
 *.mov

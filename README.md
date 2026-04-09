@@ -6,6 +6,13 @@ An AI-powered video creation toolkit built on top of [Digital Samba's claude-cod
 
 Created by [Studio Eylon](https://www.meylon.co.il).
 
+## Demo
+
+https://github.com/user-attachments/assets/video-studio-eylon.mp4
+
+> After uploading the video to GitHub, replace the URL above with the actual asset link.
+> To upload: Edit this README on GitHub, drag the MP4 into the editor, and copy the generated URL.
+
 ## Screenshots
 
 | Scenes | Project |
