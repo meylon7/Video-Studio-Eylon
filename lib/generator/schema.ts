@@ -205,7 +205,7 @@ export interface TransitionConfig {
 // Visual Config
 // ============================================
 
-export type BackgroundVariant = 'subtle' | 'tech' | 'warm' | 'dark';
+export type BackgroundVariant = 'subtle' | 'tech' | 'warm' | 'dark' | 'light' | 'paper' | 'sky';
 export type AnimationSpeed = 'slow' | 'normal' | 'fast';
 
 export interface VisualConfig {
@@ -215,6 +215,12 @@ export interface VisualConfig {
   animationSpeed?: AnimationSpeed;
   transition?: TransitionConfig;
   direction?: 'ltr' | 'rtl';
+  /** Override heading/title text color across all scenes */
+  titleColor?: string;
+  /** Override accent/primary color across all scenes */
+  accentColor?: string;
+  /** Full-frame background image (path or uploaded /app/uploads/... URL) */
+  backgroundImage?: string;
 }
 
 // ============================================
@@ -268,10 +274,62 @@ export interface LogoWatermarkConfig {
   fadeInFrame?: number;
 }
 
+export interface ColorWashConfig {
+  enabled?: boolean;
+  color?: string;
+  opacity?: number;
+  blend?: string;
+}
+
+export interface LetterboxConfig {
+  enabled?: boolean;
+  ratio?: '2.39' | '2.0' | '1.85';
+}
+
+export interface EffectsConfig {
+  /** Master multiplier for all effect opacities (0-1.5) */
+  intensity?: number;
+  glow?: boolean;
+  bloom?: boolean;
+  scanlines?: boolean;
+  lightLeaks?: boolean;
+  lightRays?: boolean;
+  bokeh?: boolean;
+  vhs?: boolean;
+  dust?: boolean;
+  colorWash?: ColorWashConfig;
+  letterbox?: LetterboxConfig;
+}
+
+export type ColorGradePreset =
+  | 'none' | 'cinematic' | 'vibrant' | 'teal-orange' | 'bleach-bypass' | 'technicolor'
+  | 'infrared' | 'matrix' | 'noir' | 'warm' | 'cold' | 'dreamy' | 'vintage' | 'sepia' | 'polaroid';
+
+export interface ColorGradeConfig {
+  preset?: ColorGradePreset;
+}
+
+/** On-screen captions/subtitles generated from each scene's narration */
+export interface CaptionsConfig {
+  enabled?: boolean;
+  position?: 'bottom' | 'top';
+}
+
 export interface OverlayConfig {
   vignette?: boolean | VignetteConfig;
   filmGrain?: boolean | FilmGrainConfig;
   logoWatermark?: boolean | LogoWatermarkConfig;
+  /** Stylistic full-frame effects (glow, scanlines, light leaks, color wash) */
+  effects?: EffectsConfig;
+  /** Color grading applied to the whole frame */
+  colorGrade?: ColorGradeConfig;
+  /** On-screen captions built from scene narration */
+  captions?: boolean | CaptionsConfig;
+}
+
+/** Per-scene visual overrides (effects + color grade applied to one scene only) */
+export interface SceneFxConfig extends EffectsConfig {
+  colorGrade?: ColorGradePreset;
 }
 
 // ============================================
@@ -338,6 +396,8 @@ export interface ResolvedScene {
   narration?: string;
   audioFile?: string;
   transition?: TransitionConfig;
+  /** Per-scene effect/grade overrides (applied to this scene only) */
+  fx?: SceneFxConfig;
 }
 
 export interface ResolvedConfig {
@@ -356,6 +416,9 @@ export interface ResolvedConfig {
     vignette: Required<VignetteConfig>;
     filmGrain: Required<FilmGrainConfig>;
     logoWatermark: Required<LogoWatermarkConfig>;
+    effects: EffectsConfig;
+    colorGrade: Required<ColorGradeConfig>;
+    captions: Required<CaptionsConfig>;
   };
   output: Required<OutputConfig>;
   variants: VariantType[];

@@ -170,6 +170,28 @@ export function compileProject(config: ResolvedConfig, outputDir: string, upload
         }
       });
     }
+
+    // Copy uploaded background music -> public/audio/background-music.wav
+    const customMusic = (config.audio as any)?.music?.customFile;
+    if (customMusic && customMusic.includes('/uploads/')) {
+      const src = path.join(uploadsDir, path.basename(customMusic));
+      if (fs.existsSync(src)) {
+        fs.copyFileSync(src, path.join(publicDir, 'audio', 'background-music.wav'));
+        console.log('  Copied uploaded background music');
+      }
+    }
+
+    // Copy uploaded background image -> public/images
+    const bgImg = (config.visual as any)?.backgroundImage;
+    if (bgImg && bgImg.includes('/uploads/')) {
+      const fn = path.basename(bgImg);
+      const src = path.join(uploadsDir, fn);
+      if (fs.existsSync(src)) {
+        fs.copyFileSync(src, path.join(publicDir, 'images', fn));
+        (config.visual as any).backgroundImage = 'images/' + fn;
+        console.log('  Copied uploaded background image');
+      }
+    }
   }
 
   // Generate video-data.json
@@ -275,97 +297,112 @@ function depthToLib(fromSrc: boolean = true): string {
 
 function generateConfigDrivenVideo(config: ResolvedConfig, hasMusicFile: boolean = false): string {
   const libBase = depthToLib(true);
-  const hasTransitions = config.scenes.some(s => s.transition && s.transition.type !== 'none');
-  const usedTransitions = new Set<string>();
 
-  if (hasTransitions) {
-    config.scenes.forEach(s => {
-      if (s.transition && s.transition.type !== 'none') {
-        usedTransitions.add(s.transition.type);
-      }
-    });
-  }
-
-  // Build transition imports
-  const transitionImports: string[] = [];
-  const officialTransitions = ['fade', 'slide', 'wipe', 'flip'];
-  const customTransitions = ['glitch', 'rgb-split', 'zoom-blur', 'light-leak', 'clock-wipe', 'pixelate', 'checkerboard'];
-
-  if (hasTransitions) {
-    transitionImports.push("import { TransitionSeries, linearTiming } from '@remotion/transitions';");
-    // Always import fade as fallback for unknown transition types
-    transitionImports.push("import { fade } from '@remotion/transitions/fade';");
-    for (const t of usedTransitions) {
-      if (t !== 'fade' && officialTransitions.includes(t)) {
-        transitionImports.push(`import { ${t} } from '@remotion/transitions/${t}';`);
-      }
-    }
-    // Map custom transition names to file names
-    const customMap: Record<string, { file: string; fn: string }> = {
-      'glitch': { file: 'glitch', fn: 'glitch' },
-      'rgb-split': { file: 'rgb-split', fn: 'rgbSplit' },
-      'zoom-blur': { file: 'zoom-blur', fn: 'zoomBlur' },
-      'light-leak': { file: 'light-leak', fn: 'lightLeak' },
-      'clock-wipe': { file: 'clock-wipe', fn: 'clockWipe' },
-      'pixelate': { file: 'pixelate', fn: 'pixelate' },
-      'checkerboard': { file: 'checkerboard', fn: 'checkerboard' },
-    };
-    for (const t of usedTransitions) {
-      if (customMap[t]) {
-        transitionImports.push(
-          `import { ${customMap[t].fn} } from '${libBase}/transitions/presentations/${customMap[t].file}';`
-        );
-      }
-    }
-  }
-
-  // Build the resolveTransition helper
-  const resolverCases = Array.from(usedTransitions).map(t => {
-    const customMap: Record<string, string> = {
-      'glitch': 'glitch', 'rgb-split': 'rgbSplit', 'zoom-blur': 'zoomBlur',
-      'light-leak': 'lightLeak', 'clock-wipe': 'clockWipe',
-      'pixelate': 'pixelate', 'checkerboard': 'checkerboard',
-      'fade': 'fade', 'slide': 'slide', 'wipe': 'wipe', 'flip': 'flip',
-    };
-    const fn = customMap[t] || 'fade';
-    return `    case '${t}': return ${fn}(props);`;
-  }).join('\n');
-
-  const seriesComponent = hasTransitions ? 'TransitionSeries' : 'Series';
-  const seriesImport = hasTransitions ? '' : "import { Series } from 'remotion';";
-
+  // The composition is props-driven: `visual` and `overlays` come from props
+  // (with a zod schema in Root.tsx) so they are live-editable in Remotion Studio,
+  // falling back to the baked video-data.json. All transitions are imported so
+  // the transition can be switched live.
   return `import React from 'react';
-import { AbsoluteFill, Audio, staticFile, Sequence, Img${hasTransitions ? '' : ', Series'} } from 'remotion';
-${transitionImports.join('\n')}
+import { AbsoluteFill, Audio, staticFile, Sequence, Img, useCurrentFrame } from 'remotion';
+import { TransitionSeries, linearTiming } from '@remotion/transitions';
+import { fade } from '@remotion/transitions/fade';
+import { slide } from '@remotion/transitions/slide';
+import { wipe } from '@remotion/transitions/wipe';
+import { flip } from '@remotion/transitions/flip';
+import { glitch } from '${libBase}/transitions/presentations/glitch';
+import { rgbSplit } from '${libBase}/transitions/presentations/rgb-split';
+import { zoomBlur } from '${libBase}/transitions/presentations/zoom-blur';
+import { lightLeak } from '${libBase}/transitions/presentations/light-leak';
+import { clockWipe } from '${libBase}/transitions/presentations/clock-wipe';
+import { pixelate } from '${libBase}/transitions/presentations/pixelate';
+import { checkerboard } from '${libBase}/transitions/presentations/checkerboard';
 import { ThemeProvider, defaultTheme } from './config/theme';
 import { SCENE_REGISTRY } from '${libBase}/components/scenes';
 import { AnimatedBackground } from '${libBase}/components/AnimatedBackground';
 import { Vignette } from '${libBase}/components/Vignette';
 import { LogoWatermark } from '${libBase}/components/LogoWatermark';
+import { FilmGrain } from '${libBase}/components/FilmGrain';
+import { EffectsLayer, colorGradeFilter } from '${libBase}/components/EffectsLayer';
 import videoData from './video-data.json';
 
-${hasTransitions ? `function resolveTransition(type: string, props: any = {}) {
+function resolveTransition(type: string, props: any = {}) {
   switch (type) {
-${resolverCases}
+    case 'fade': return fade(props);
+    case 'slide': return slide(props);
+    case 'wipe': return wipe(props);
+    case 'flip': return flip(props);
+    case 'glitch': return glitch(props);
+    case 'rgb-split': return rgbSplit(props);
+    case 'zoom-blur': return zoomBlur(props);
+    case 'light-leak': return lightLeak(props);
+    case 'clock-wipe': return clockWipe(props);
+    case 'pixelate': return pixelate(props);
+    case 'checkerboard': return checkerboard(props);
     default: return fade();
   }
-}` : ''}
+}
 
-export const ConfigDrivenVideo: React.FC = () => {
-  const { scenes, visual, overlays, audio, product, output } = videoData as any;
+// Bottom caption bar built from each scene's narration.
+const CaptionTrack: React.FC<{ scenes: any[]; caps: any; direction: string }> = ({ scenes, caps, direction }) => {
+  const frame = useCurrentFrame();
+  let text = '';
+  for (const s of scenes) {
+    const start = s.startFrame + 8;
+    const end = s.startFrame + s.durationFrames - 6;
+    if (s.narration && frame >= start && frame <= end) { text = s.narration; break; }
+  }
+  if (!text) return null;
+  const bg = caps.background !== false;
+  const color = caps.color || '#ffffff';
+  const size = caps.size || 34;
+  return (
+    <div style={{ position: 'absolute', left: 0, right: 0, ...(caps.position === 'top' ? { top: 80 } : { bottom: 80 }), display: 'flex', justifyContent: 'center', zIndex: 120, padding: '0 8%' }}>
+      <div style={{ background: bg ? 'rgba(8,12,24,0.78)' : 'transparent', borderRadius: 14, padding: bg ? '14px 30px' : 0, maxWidth: '88%' }}>
+        <span style={{ color, fontSize: size, fontWeight: 600, lineHeight: 1.35, fontFamily: defaultTheme.fonts.primary, textAlign: 'center', display: 'block', direction: direction as any, textShadow: bg ? undefined : '0 2px 10px rgba(0,0,0,0.85)' }}>{text}</span>
+      </div>
+    </div>
+  );
+};
+
+export const ConfigDrivenVideo: React.FC<{ visual?: any; overlays?: any }> = (props) => {
+  const data = videoData as any;
+  // Props (editable live in Studio) merged over the baked config
+  const visual = { ...data.visual, ...(props.visual || {}) };
+  const overlays = { ...data.overlays, ...(props.overlays || {}) };
+  const { scenes, audio, product, output } = data;
   const fps = output.fps;
+  const gradeFilter = colorGradeFilter(overlays.colorGrade && overlays.colorGrade.preset);
+  const baseIntensity = (overlays.effects && overlays.effects.intensity) || 1;
+  const captionsOn = overlays.captions && overlays.captions.enabled;
+  const LIGHT_BG: any = { light: ['#ffffff', '#eef2f7'], paper: ['#f7f1e6', '#ece2cf'], sky: ['#eef5fd', '#d6e7fb'] };
+  const lightPair = LIGHT_BG[visual.background];
+  const bgDark = !lightPair && (visual.background === 'dark' || visual.background === 'tech');
+  const colorOverride: any = lightPair ? { textDark: '#0f172a', textMedium: '#475569', textLight: '#94a3b8', bgLight: lightPair[0], bgDark: lightPair[0], bgOverlay: 'rgba(15,23,42,0.05)', divider: '#e2e8f0', shadow: 'rgba(15,23,42,0.12)' } : {};
+  if (visual.titleColor) colorOverride.textDark = visual.titleColor;
+  if (visual.accentColor) { colorOverride.primary = visual.accentColor; colorOverride.accent = visual.accentColor; }
 
   return (
-    <ThemeProvider theme={{...defaultTheme, direction: visual.direction || 'ltr'}}>
+    <ThemeProvider theme={{...defaultTheme, direction: visual.direction || 'ltr', colors: {...defaultTheme.colors, ...colorOverride}}}>
       <AbsoluteFill
         style={{
-          backgroundColor: visual.background === 'dark' || visual.background === 'tech' ? defaultTheme.colors.bgDark : defaultTheme.colors.bgLight,
+          backgroundColor: lightPair ? lightPair[0] : (bgDark ? defaultTheme.colors.bgDark : defaultTheme.colors.bgLight),
           fontFamily: defaultTheme.fonts.primary,
           direction: visual.direction || 'ltr',
           textAlign: visual.direction === 'rtl' ? 'right' : 'left',
+          filter: gradeFilter || undefined,
         }}
       >
-        <AnimatedBackground variant={visual.background as any} />
+        {lightPair ? (
+          <AbsoluteFill style={{ background: \`radial-gradient(120% 120% at 80% 10%, \${lightPair[1]}, \${lightPair[0]})\` }} />
+        ) : (
+          <AnimatedBackground variant={visual.background as any} />
+        )}
+        {visual.backgroundImage && (
+          <AbsoluteFill>
+            <Img src={staticFile(visual.backgroundImage)} style={{width:'100%',height:'100%',objectFit:'cover',position:'absolute'}} />
+            <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.35)'}} />
+          </AbsoluteFill>
+        )}
 
 ${hasMusicFile ? `        {/* Background Music */}
         <Audio src={staticFile('audio/background-music.wav')} volume={audio.music?.volume || 0.1} />` : '        {/* No music file generated */}'}
@@ -394,32 +431,49 @@ ${hasMusicFile ? `        {/* Background Music */}
         )}
 
         {/* Scenes */}
-        <${seriesComponent}>
+        <TransitionSeries>
           {scenes.map((scene: any, i: number) => {
             const SceneComponent = (SCENE_REGISTRY as any)[scene.type];
             if (!SceneComponent) return null;
+            const fx = scene.fx;
+            const sceneGrade = fx && fx.colorGrade ? colorGradeFilter(fx.colorGrade) : '';
+            const t = scene.transition || visual.transition || { type: 'none', durationFrames: 15 };
 
             return (
               <React.Fragment key={i}>
-                <${seriesComponent}.Sequence durationInFrames={scene.durationFrames}>
-                  {scene.content.backgroundImage && (
-                    <AbsoluteFill>
-                      <Img src={staticFile(scene.content.backgroundImage)} style={{width:'100%',height:'100%',objectFit:'cover',position:'absolute'}} />
-                      <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.55)'}} />
-                    </AbsoluteFill>
-                  )}
-                  <SceneComponent content={scene.content} durationInFrames={scene.durationFrames} />
-                </${seriesComponent}.Sequence>
-${hasTransitions ? `                {i < scenes.length - 1 && scene.transition && scene.transition.type !== 'none' && (
+                <TransitionSeries.Sequence durationInFrames={scene.durationFrames}>
+                  <AbsoluteFill style={{ filter: sceneGrade || undefined }}>
+                    {scene.content.backgroundImage && (
+                      <AbsoluteFill>
+                        <Img src={staticFile(scene.content.backgroundImage)} style={{width:'100%',height:'100%',objectFit:'cover',position:'absolute'}} />
+                        <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.55)'}} />
+                      </AbsoluteFill>
+                    )}
+                    <SceneComponent content={scene.content} durationInFrames={scene.durationFrames} />
+                    {fx && <EffectsLayer effects={{ intensity: baseIntensity, ...fx }} />}
+                  </AbsoluteFill>
+                </TransitionSeries.Sequence>
+                {i < scenes.length - 1 && t.type !== 'none' && (
                   <TransitionSeries.Transition
-                    presentation={resolveTransition(scene.transition.type, scene.transition.props)}
-                    timing={linearTiming({ durationInFrames: scene.transition.durationFrames || 15 })}
+                    presentation={resolveTransition(t.type)}
+                    timing={linearTiming({ durationInFrames: t.durationFrames || 15 })}
                   />
-                )}` : ''}
+                )}
               </React.Fragment>
             );
           })}
-        </${seriesComponent}>
+        </TransitionSeries>
+
+        {/* Post-effects — rendered on top of all scenes */}
+        {overlays.filmGrain && overlays.filmGrain.enabled && (
+          <FilmGrain opacity={overlays.filmGrain.opacity} />
+        )}
+        {overlays.effects && (
+          <EffectsLayer effects={overlays.effects} />
+        )}
+        {captionsOn && (
+          <CaptionTrack scenes={scenes} caps={overlays.captions} direction={visual.direction || 'ltr'} />
+        )}
       </AbsoluteFill>
     </ThemeProvider>
   );
@@ -489,13 +543,42 @@ function generateRootTSX(config: ResolvedConfig): string {
   const compositions: string[] = [];
   const imports: string[] = [
     "import { Composition } from 'remotion';",
+    "import { z } from 'zod';",
+    "import { zColor } from '@remotion/zod-types';",
     "import { ConfigDrivenVideo } from './ConfigDrivenVideo';",
   ];
+
+  // Default props for the live-editable knobs (subset of the resolved config).
+  // Emitted as a literal so Studio's schema editor has valid initial values.
+  const studioDefaults = {
+    visual: {
+      background: config.visual.background,
+      animationSpeed: config.visual.animationSpeed,
+      direction: config.visual.direction,
+      transition: {
+        type: config.visual.transition.type,
+        durationFrames: config.visual.transition.durationFrames,
+      },
+    },
+    overlays: {
+      vignette: config.overlays.vignette,
+      filmGrain: config.overlays.filmGrain,
+      colorGrade: config.overlays.colorGrade,
+      effects: config.overlays.effects,
+      captions: config.overlays.captions,
+    },
+  };
+  const defaultPropsLiteral = JSON.stringify(studioDefaults, null, 2)
+    .split('\n').join('\n');
+
+  const studioProps = `        schema={videoSchema}
+        defaultProps={studioDefaultProps}`;
 
   // Main composition
   compositions.push(`      <Composition
         id="Main"
         component={ConfigDrivenVideo}
+${studioProps}
         durationInFrames={${config.totalFrames}}
         fps={${config.output.fps}}
         width={${config.output.width}}
@@ -520,6 +603,7 @@ function generateRootTSX(config: ResolvedConfig): string {
     compositions.push(`      <Composition
         id="Vertical"
         component={ConfigDrivenVideo}
+${studioProps}
         durationInFrames={${config.totalFrames}}
         fps={${config.output.fps}}
         width={1080}
@@ -532,6 +616,7 @@ function generateRootTSX(config: ResolvedConfig): string {
     compositions.push(`      <Composition
         id="Square"
         component={ConfigDrivenVideo}
+${studioProps}
         durationInFrames={${config.totalFrames}}
         fps={${config.output.fps}}
         width={1080}
@@ -540,6 +625,60 @@ function generateRootTSX(config: ResolvedConfig): string {
   }
 
   return `${imports.join('\n')}
+
+// Live-editable schema for Remotion Studio's props panel.
+export const videoSchema = z.object({
+  visual: z.object({
+    background: z.enum(['dark', 'tech', 'warm', 'subtle']),
+    animationSpeed: z.enum(['slow', 'normal', 'fast']),
+    direction: z.enum(['ltr', 'rtl']),
+    transition: z.object({
+      type: z.enum(['fade', 'slide', 'wipe', 'flip', 'clock-wipe', 'checkerboard', 'zoom-blur', 'glitch', 'rgb-split', 'light-leak', 'pixelate', 'none']),
+      durationFrames: z.number().int().min(0).max(120),
+    }),
+  }),
+  overlays: z.object({
+    vignette: z.object({
+      enabled: z.boolean(),
+      intensity: z.number().min(0).max(1),
+      centerSize: z.number().min(0).max(100),
+    }),
+    filmGrain: z.object({
+      enabled: z.boolean(),
+      opacity: z.number().min(0).max(1),
+    }),
+    colorGrade: z.object({
+      preset: z.enum(['none', 'cinematic', 'vibrant', 'teal-orange', 'bleach-bypass', 'technicolor', 'infrared', 'matrix', 'noir', 'warm', 'cold', 'dreamy', 'vintage', 'sepia', 'polaroid']),
+    }),
+    effects: z.object({
+      intensity: z.number().min(0).max(1.5),
+      glow: z.boolean(),
+      bloom: z.boolean(),
+      scanlines: z.boolean(),
+      lightLeaks: z.boolean(),
+      lightRays: z.boolean(),
+      bokeh: z.boolean(),
+      vhs: z.boolean(),
+      dust: z.boolean(),
+      colorWash: z.object({
+        enabled: z.boolean(),
+        color: zColor(),
+        opacity: z.number().min(0).max(1),
+        blend: z.string(),
+      }),
+      letterbox: z.object({
+        enabled: z.boolean(),
+        ratio: z.enum(['2.39', '2.0', '1.85']),
+      }),
+    }),
+    captions: z.object({
+      enabled: z.boolean(),
+      position: z.enum(['bottom', 'top']),
+    }),
+  }),
+});
+
+const studioDefaultProps = ${defaultPropsLiteral} as z.infer<typeof videoSchema>;
 
 export const RemotionRoot: React.FC = () => {
   return (

@@ -67,6 +67,9 @@ export const DEFAULT_VISUAL: Required<VisualConfig> = {
   animationSpeed: 'normal',
   transition: DEFAULT_TRANSITION,
   direction: 'ltr',
+  titleColor: '',
+  accentColor: '',
+  backgroundImage: '',
 };
 
 /** Default audio config */
@@ -94,6 +97,21 @@ export const DEFAULT_OVERLAYS = {
   vignette: { enabled: true, intensity: 0.4, centerSize: 50 },
   filmGrain: { enabled: false, opacity: 0.05 },
   logoWatermark: { enabled: false, position: 'bottom-right' as const, size: 36, fadeInFrame: 120 },
+  effects: {
+    intensity: 1,
+    glow: false,
+    bloom: false,
+    scanlines: false,
+    lightLeaks: false,
+    lightRays: false,
+    bokeh: false,
+    vhs: false,
+    dust: false,
+    colorWash: { enabled: false, color: '#ff7a18', opacity: 0.25, blend: 'soft-light' },
+    letterbox: { enabled: false, ratio: '2.39' as const },
+  },
+  colorGrade: { preset: 'none' as const },
+  captions: { enabled: true, position: 'bottom' as const },
 };
 
 /** Default output config */

@@ -16,6 +16,8 @@ import { InfographicScene } from './InfographicScene';
 import { WebinarIntroScene } from './WebinarIntroScene';
 import { WebinarOutroScene } from './WebinarOutroScene';
 import { ImageScene } from './ImageScene';
+import { MotionScene } from './MotionScene';
+import { CommentExplosion } from './CommentExplosion';
 
 // Re-export individual scenes
 export {
@@ -32,6 +34,8 @@ export {
   WebinarIntroScene,
   WebinarOutroScene,
   ImageScene,
+  MotionScene,
+  CommentExplosion,
 };
 
 /**
@@ -53,4 +57,6 @@ export const SCENE_REGISTRY: Record<string, React.FC<SceneProps>> = {
   'webinar-intro': WebinarIntroScene,
   'webinar-outro': WebinarOutroScene,
   'image': ImageScene,
+  'motion': MotionScene,
+  'comment-explosion': CommentExplosion,
 };

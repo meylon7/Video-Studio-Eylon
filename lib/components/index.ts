@@ -19,6 +19,9 @@ export type { FilmGrainProps } from './FilmGrain';
 export { LogoWatermark } from './LogoWatermark';
 export type { LogoWatermarkProps } from './LogoWatermark';
 
+export { EffectsLayer, colorGradeFilter } from './EffectsLayer';
+export type { EffectsConfig, ColorWashConfig } from './EffectsLayer';
+
 // Utilities
 export { hexToRgba, SIZE_PRESETS, POSITION_PRESETS } from './utils';
 export type { SizePreset, PositionPreset } from './utils';

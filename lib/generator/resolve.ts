@@ -31,6 +31,7 @@ export function resolveConfig(raw: VideoConfig, projectName: string): ResolvedCo
 
     // Expand shorthand formats
     const content = expandSceneContent(scene);
+    const sceneAny = scene as any;
 
     return {
       type: scene.type,
@@ -39,8 +40,10 @@ export function resolveConfig(raw: VideoConfig, projectName: string): ResolvedCo
       durationFrames,
       startFrame,
       narration: 'narration' in scene ? scene.narration : undefined,
+      fx: sceneAny.fx,
+      // Per-scene transition (plays AFTER this scene) — falls back to the global one.
       transition: i < raw.scenes.length - 1
-        ? (raw.visual?.transition || DEFAULT_TRANSITION)
+        ? (sceneAny.transition || raw.visual?.transition || DEFAULT_TRANSITION)
         : undefined,
     };
   });
@@ -102,7 +105,23 @@ export function resolveConfig(raw: VideoConfig, projectName: string): ResolvedCo
       music: { ...DEFAULT_AUDIO.music, ...raw.audio?.music },
       sfx: { ...DEFAULT_AUDIO.sfx, ...raw.audio?.sfx },
     },
-    overlays: { vignette, filmGrain, logoWatermark },
+    overlays: {
+      vignette,
+      filmGrain,
+      logoWatermark,
+      effects: {
+        ...DEFAULT_OVERLAYS.effects,
+        ...raw.overlays?.effects,
+        colorWash: { ...DEFAULT_OVERLAYS.effects.colorWash, ...raw.overlays?.effects?.colorWash },
+        letterbox: { ...DEFAULT_OVERLAYS.effects.letterbox, ...raw.overlays?.effects?.letterbox },
+      },
+      colorGrade: { ...DEFAULT_OVERLAYS.colorGrade, ...raw.overlays?.colorGrade },
+      captions: raw.overlays?.captions === true
+        ? { ...DEFAULT_OVERLAYS.captions, enabled: true }
+        : raw.overlays?.captions === false
+        ? { ...DEFAULT_OVERLAYS.captions, enabled: false }
+        : { ...DEFAULT_OVERLAYS.captions, ...raw.overlays?.captions },
+    },
     output: { ...DEFAULT_OUTPUT, ...raw.output },
     variants: raw.variants || [],
     totalDurationSeconds,
@@ -112,7 +131,8 @@ export function resolveConfig(raw: VideoConfig, projectName: string): ResolvedCo
 
 /** Expand shorthand scene content into full format */
 function expandSceneContent(scene: SceneContent): Record<string, any> {
-  const { type, duration, narration, ...content } = scene as any;
+  // Pull out meta keys (transition/fx) so they don't leak into scene props
+  const { type, duration, narration, transition, fx, ...content } = scene as any;
 
   // Problem: convert bullets[] shorthand to problems[]
   if (type === 'problem' && content.bullets && !content.problems) {

@@ -12,22 +12,28 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { resolveConfig } from '../lib/generator/resolve';
 import { compileProject } from '../lib/generator/compile';
-import { generateAssets } from '../lib/generator/assets';
+import { generateAssets, generateSFX } from '../lib/generator/assets';
 import { installDependencies } from '../lib/generator/render';
-import { execSync } from 'child_process';
+import { execSync, spawn, ChildProcess } from 'child_process';
+import * as net from 'net';
 
 // Uploads directory
 const uploadsDir = path.join(__dirname, '../app/uploads');
 fs.mkdirSync(uploadsDir, { recursive: true });
 
 const app = express();
-const PORT = 3333;
+const PORT = Number(process.env.PORT) || 3333;
 
 app.use(cors());
 app.use(express.json({ limit: '200mb' }));
 
 // Serve static files
-app.use('/app', express.static(path.join(__dirname, '../app')));
+// Serve the web UI with no caching so edits always show up on refresh
+app.use('/app', express.static(path.join(__dirname, '../app'), {
+  etag: false,
+  lastModified: false,
+  setHeaders: (res) => res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate'),
+}));
 app.use('/projects', express.static(path.join(__dirname, '../projects')));
 app.use('/brands', express.static(path.join(__dirname, '../brands')));
 
@@ -69,6 +75,100 @@ app.get('/api/projects', (_req, res) => {
   res.json(projects);
 });
 
+// Get a single project's config (video-data.json) for editing
+app.get('/api/projects/:name/config', (req, res) => {
+  const projectName = path.basename(req.params.name);
+  const configPath = path.join(__dirname, '../projects', projectName, 'remotion', 'src', 'video-data.json');
+  if (!fs.existsSync(configPath)) return res.status(404).json({ error: 'Config not found' });
+  try {
+    res.json(JSON.parse(fs.readFileSync(configPath, 'utf-8')));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Remotion Studio launcher ────────────────────────────────────────────────
+// Live timeline editor per project. We keep one Studio process per project and
+// reuse it if already running.
+const studios: Record<string, { port: number; proc: ChildProcess }> = {};
+
+/** Kill a detached Studio and its whole process group. */
+function killStudio(proc: ChildProcess) {
+  if (!proc.pid) return;
+  try { process.kill(-proc.pid, 'SIGTERM'); } catch { try { proc.kill(); } catch {} }
+}
+
+/** Ask the OS for a guaranteed-free TCP port. */
+function findFreePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const srv = net.createServer();
+    srv.once('error', reject);
+    srv.listen(0, '127.0.0.1', () => {
+      const addr = srv.address();
+      const port = typeof addr === 'object' && addr ? addr.port : 0;
+      srv.close(() => resolve(port));
+    });
+  });
+}
+
+/** Resolve when a TCP port starts accepting connections, or false after timeout. */
+function waitForPort(port: number, timeoutMs: number): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  return new Promise((resolve) => {
+    const attempt = () => {
+      const sock = net.createConnection({ port, host: '127.0.0.1' });
+      sock.once('connect', () => { sock.destroy(); resolve(true); });
+      sock.once('error', () => {
+        sock.destroy();
+        if (Date.now() > deadline) return resolve(false);
+        setTimeout(attempt, 400);
+      });
+    };
+    attempt();
+  });
+}
+
+// Launch (or reuse) Remotion Studio for a project
+app.post('/api/projects/:name/studio', async (req, res) => {
+  const projectName = path.basename(req.params.name);
+  const remotionDir = path.join(__dirname, '../projects', projectName, 'remotion');
+  if (!fs.existsSync(remotionDir)) {
+    return res.status(404).json({ error: 'Project not found' });
+  }
+
+  // Reuse a live Studio if we already started one
+  const existing = studios[projectName];
+  if (existing && existing.proc.exitCode === null && !existing.proc.killed) {
+    return res.json({ url: `http://localhost:${existing.port}`, already: true });
+  }
+
+  const port = await findFreePort();
+  console.log(`Launching Remotion Studio for "${projectName}" on port ${port}...`);
+  // Log Studio output to a file and fully detach it so it runs independently of
+  // this server (a crashing/exiting Studio must never take the server down).
+  const logsDir = path.join(__dirname, '../app/previews');
+  fs.mkdirSync(logsDir, { recursive: true });
+  const logFd = fs.openSync(path.join(logsDir, `studio-${projectName}.log`), 'a');
+  const proc = spawn('npx', ['remotion', 'studio', '--port', String(port), '--no-open'], {
+    cwd: remotionDir,
+    env: process.env,
+    stdio: ['ignore', logFd, logFd],
+    detached: true,
+  });
+  proc.unref();
+  studios[projectName] = { port, proc };
+  proc.on('exit', () => { delete studios[projectName]; });
+  proc.on('error', (err) => { console.error(`Studio spawn error (${projectName}):`, err.message); });
+
+  const up = await waitForPort(port, 40000);
+  if (!up) {
+    killStudio(proc);
+    delete studios[projectName];
+    return res.status(500).json({ error: 'Studio did not start in time' });
+  }
+  res.json({ url: `http://localhost:${port}` });
+});
+
 // Delete a project
 app.delete('/api/projects/:name', (req, res) => {
   const projectName = path.basename(req.params.name); // prevent path traversal
@@ -83,6 +183,11 @@ app.delete('/api/projects/:name', (req, res) => {
   }
   if (!fs.existsSync(projectDir)) {
     return res.status(404).json({ error: 'Project not found' });
+  }
+  // Stop any running Studio for this project before deleting its files
+  if (studios[projectName]) {
+    killStudio(studios[projectName].proc);
+    delete studios[projectName];
   }
   try {
     // Use OS-level delete on Windows to handle locked files
@@ -103,7 +208,24 @@ app.delete('/api/projects/:name', (req, res) => {
 const ALLOWED_MIMES = new Set([
   'image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp', 'image/svg+xml',
   'video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo',
+  'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/ogg', 'audio/aac', 'audio/mp4', 'audio/x-m4a',
 ]);
+
+/** Resolve a working Python that has edge_tts (env PYTHON → python3 → python). Cached. */
+let _pythonBin: string | null = null;
+function resolvePython(): string {
+  if (_pythonBin) return _pythonBin;
+  const candidates = [process.env.PYTHON, 'python3', 'python'].filter(Boolean) as string[];
+  for (const cmd of candidates) {
+    try { execSync(`"${cmd}" -c "import edge_tts"`, { stdio: 'pipe' }); _pythonBin = cmd; return cmd; } catch {}
+  }
+  // Fall back to any python that at least runs, so we can report a clear error
+  for (const cmd of candidates) {
+    try { execSync(`"${cmd}" --version`, { stdio: 'pipe' }); _pythonBin = cmd; return cmd; } catch {}
+  }
+  _pythonBin = 'python3';
+  return _pythonBin;
+}
 const MAX_UPLOAD_BYTES = 100 * 1024 * 1024; // 100MB
 
 // Base64 file upload
@@ -155,7 +277,7 @@ app.post('/api/preview-voice', async (req, res) => {
   const outputPath = path.join(previewDir, filename).replace(/\\/g, '/');
 
   const sampleText = text || (voice?.startsWith('he-') ? 'שלום, זוהי דוגמה לקול הזה' : 'Hello, this is a preview of how this voice sounds.');
-  const python = process.env.PYTHON || 'python';
+  const python = resolvePython();
   const script = `import asyncio, edge_tts
 
 async def gen():
@@ -168,13 +290,38 @@ asyncio.run(gen())
   const tmpFile = path.join(os.tmpdir(), `voice-preview-${Date.now()}.py`);
   fs.writeFileSync(tmpFile, script, 'utf-8');
   try {
-    execSync(`"${python}" "${tmpFile}"`, { timeout: 15000 });
+    execSync(`"${python}" "${tmpFile}"`, { timeout: 15000, stdio: 'pipe' });
     try { fs.unlinkSync(tmpFile); } catch {}
     res.json({ url: `/app/previews/${filename}` });
   } catch (err: any) {
     try { fs.unlinkSync(tmpFile); } catch {}
-    res.status(500).json({ error: err.message });
+    const stderr = (err.stderr ? err.stderr.toString() : '') || err.message || '';
+    let msg = 'יצירת הקול נכשלה';
+    if (/No module named ['"]?edge_tts/.test(stderr)) msg = 'edge-tts לא מותקן. הרץ: pip3 install edge-tts';
+    else if (/not found|No such file|ENOENT/.test(stderr)) msg = `Python לא נמצא (${python}). התקן Python 3`;
+    else if (/getaddrinfo|Temporary failure|ConnectionError|timed out/i.test(stderr)) msg = 'אין חיבור לאינטרנט ליצירת הקול';
+    console.error('preview-voice failed:', stderr.slice(0, 400));
+    res.status(500).json({ error: msg });
   }
+});
+
+// SFX preview — lazily generate the sound-effect palette and return playable URLs
+const SFX_LIST = [
+  { name: 'whoosh', label: 'וווש', file: 'sfx-whoosh.wav' },
+  { name: 'click', label: 'קליק', file: 'sfx-click.wav' },
+  { name: 'reveal', label: 'ריוויל', file: 'sfx-reveal.wav' },
+  { name: 'success', label: 'הצלחה', file: 'sfx-success.wav' },
+  { name: 'boom', label: 'בום', file: 'sfx-boom.wav' },
+];
+app.get('/api/sfx', (_req, res) => {
+  const dir = path.join(__dirname, '../app/previews/sfx');
+  fs.mkdirSync(dir, { recursive: true });
+  const missing = SFX_LIST.some(s => !fs.existsSync(path.join(dir, s.file)));
+  if (missing) {
+    try { generateSFX(dir); }
+    catch (e: any) { console.error('SFX gen failed:', e.message); return res.status(500).json({ error: 'יצירת אפקטי הקול נכשלה (דרוש Python 3)' }); }
+  }
+  res.json({ sfx: SFX_LIST.map(s => ({ name: s.name, label: s.label, url: `/app/previews/sfx/${s.file}` })) });
 });
 
 // Track generation status

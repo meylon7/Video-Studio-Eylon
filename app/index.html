@@ -1,799 +1,1257 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Studio Eylon — Video Generator</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Inter, system-ui, sans-serif; background: #020617; color: #e2e8f0; }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Studio Eylon · Video Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6FB; --panel:#FFFFFF; --panel-2:#F8FAFC; --panel-3:#F1F5F9;
+  --border:#E7EBF0; --border-strong:#CBD5E1;
+  --text:#0F172A; --text-dim:#64748B; --text-muted:#94A3B8;
+  --accent:#4F46E5; --accent-ink:#3730A3; --accent-soft:#EEF0FF;
+  --font-sans:'Heebo','Segoe UI',system-ui,-apple-system,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  --shadow-xs:0 1px 2px rgba(15,23,42,0.05);
+  --shadow:0 1px 2px rgba(15,23,42,0.06),0 1px 3px rgba(15,23,42,0.05);
+  --shadow-md:0 4px 6px rgba(15,23,42,0.04),0 10px 20px rgba(15,23,42,0.07);
+  --shadow-lg:0 12px 24px rgba(15,23,42,0.08),0 24px 48px rgba(15,23,42,0.10);
+  --r-xs:6px; --r-sm:8px; --r-md:10px; --r-lg:14px; --r-xl:18px; --r-pill:999px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;direction:rtl;font-family:var(--font-sans);color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;min-height:100vh;}
+button{font-family:inherit;cursor:pointer;}
+input,textarea,select{font-family:inherit;}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-dim);}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
+.hidden{display:none !important;}
 
-    /* Top bar */
-    .topbar { padding: 16px 40px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 16px; background: #0f172a; }
-    .topbar h1 { font-size: 20px; font-weight: 700; }
-    .topbar .ver { background: #ea580c20; color: #ea580c; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; }
-    .topbar .spacer { flex: 1; }
-    .topbar .status { font-size: 13px; color: #64748b; }
+/* form primitives */
+.field{display:flex;flex-direction:column;gap:6px;}
+.lbl{font-size:11.5px;font-weight:600;letter-spacing:0.3px;color:var(--text-dim);text-transform:uppercase;display:flex;align-items:center;gap:5px;}
+.lbl .q{width:14px;height:14px;border-radius:50%;display:inline-grid;place-items:center;background:var(--panel-3);color:var(--text-muted);font-size:9px;font-weight:700;text-transform:none;cursor:help;}
+.inp,.ta,.sel{width:100%;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:var(--r-sm);padding:10px 12px;font-size:14px;line-height:1.4;outline:none;transition:border-color .15s,box-shadow .15s,background .15s;}
+.inp::placeholder,.ta::placeholder{color:var(--text-muted);}
+.inp:focus,.ta:focus,.sel:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent);}
+.ta{resize:vertical;min-height:64px;}
+.sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 12px center;padding-left:32px;}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;background:var(--panel-3);outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--accent);box-shadow:var(--shadow-xs);cursor:pointer;}
+input[type=color]{width:38px;height:34px;padding:2px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--panel);cursor:pointer;}
 
-    /* Form area — horizontal accordion */
-    .form-area { background: #0f172a; border-bottom: 1px solid #1e293b; }
-    .form-tabs { display: flex; border-bottom: 1px solid #1e293b; padding: 0 40px; gap: 0; overflow-x: auto; }
-    .form-tab {
-      padding: 12px 20px; cursor: pointer; font-size: 13px; font-weight: 500;
-      color: #64748b; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s;
-    }
-    .form-tab:hover { color: #94a3b8; }
-    .form-tab.active { color: #ea580c; border-bottom-color: #ea580c; }
-    .form-panels { padding: 24px 40px; }
-    .form-panel { display: none; }
-    .form-panel.active { display: block; }
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:13.5px;font-weight:600;padding:9px 14px;border-radius:var(--r-sm);transition:all .15s;}
+.btn:hover{border-color:var(--border-strong);background:var(--panel-2);transform:translateY(-1px);}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:var(--shadow);}
+.btn-primary:hover{background:var(--accent-ink);border-color:var(--accent-ink);}
+.btn-primary:disabled{opacity:.6;cursor:wait;transform:none;}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text-dim);}
+.btn-ghost:hover{background:var(--panel-3);color:var(--text);transform:none;}
+.btn-danger{color:#B91C1C;border-color:transparent;background:transparent;}
+.btn-danger:hover{background:#FEF2F2;border-color:#FECACA;}
+.icon-btn{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--panel);color:var(--text-dim);transition:all .15s;font-size:15px;}
+.icon-btn:hover{color:var(--text);border-color:var(--border-strong);background:var(--panel-2);}
+.icon-btn.studio:hover{color:var(--accent);border-color:var(--accent);}
+.icon-btn.del:hover{color:#B91C1C;border-color:#FECACA;background:#FEF2F2;}
 
-    /* Form layout */
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
-    .form-wide { grid-column: 1 / -1; }
-    label { display: flex; align-items: center; font-size: 12px; color: #94a3b8; margin-bottom: 5px; font-weight: 500; gap: 4px; }
-    input, select, textarea {
-      width: 100%; padding: 9px 12px; background: #020617; border: 1px solid #1e293b;
-      border-radius: 7px; color: #e2e8f0; font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.15s;
-    }
-    input:focus, select:focus, textarea:focus { border-color: #ea580c; }
-    textarea { resize: vertical; min-height: 50px; }
-    .field { margin-bottom: 0; }
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:#D5DBE3;border-radius:999px;border:2px solid var(--bg);}
+::-webkit-scrollbar-thumb:hover{background:var(--border-strong);}
+::-webkit-scrollbar-track{background:transparent;}
 
-    /* Toggle */
-    .toggle { display: flex; align-items: center; gap: 8px; }
-    .toggle input[type="checkbox"] { width: 18px; height: 18px; accent-color: #ea580c; }
-    .toggle label { margin: 0; font-size: 13px; }
+/* preview frame */
+.frame{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#0B1020;aspect-ratio:16/9;box-shadow:var(--shadow-md);}
+.frame-slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:8% 9%;color:#fff;}
 
-    /* Buttons */
-    .btn { padding: 9px 18px; border-radius: 7px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; transition: all 0.15s; }
-    .btn-primary { background: #ea580c; color: #fff; }
-    .btn-primary:hover { background: #c2410c; }
-    .btn-primary:disabled { background: #4a2410; color: #a0644a; cursor: not-allowed; }
-    .btn-secondary { background: #1e293b; color: #94a3b8; }
-    .btn-secondary:hover { background: #334155; color: #e2e8f0; }
-    .btn-sm { padding: 5px 10px; font-size: 11px; }
-    .btn-danger { background: #7f1d1d; color: #fca5a5; }
-    .btn-danger:hover { background: #991b1b; }
+.app{display:flex;flex-direction:column;min-height:100vh;}
 
-    /* Scene cards in form */
-    .scenes-row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
-    .scene-card {
-      background: #020617; border: 1px solid #1e293b; border-radius: 10px;
-      padding: 14px; min-width: 280px; max-width: 320px; flex-shrink: 0; position: relative;
-      cursor: grab; user-select: none; transition: transform 0.15s, opacity 0.15s, border-color 0.15s;
-    }
-    .scene-card:hover { border-color: #334155; }
-    .scene-card.dragging { opacity: 0.4; border-color: #ea580c; transform: scale(0.95); }
-    .scene-card.drag-over { border-color: #ea580c; border-style: dashed; }
-    .scene-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .scene-type { font-size: 11px; font-weight: 600; color: #ea580c; text-transform: uppercase; letter-spacing: 0.5px; }
-    .remove-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 16px; opacity: 0.5; }
-    .remove-btn:hover { opacity: 1; }
-    .add-scene-btns { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 8px; }
+/* topbar */
+.topbar{display:flex;align-items:center;gap:24px;padding:0 28px;height:64px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;}
+.brand{display:flex;align-items:center;gap:11px;}
+.logo-mark{width:34px;height:34px;border-radius:9px;background:var(--accent);display:grid;place-items:center;color:#fff;box-shadow:var(--shadow);}
+.brand b{font-size:16px;font-weight:700;letter-spacing:-0.2px;}
+.badge{font-size:10.5px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:var(--r-pill);}
+.tabs{display:flex;gap:4px;margin-inline-start:8px;}
+.tab{border:none;background:transparent;color:var(--text-dim);font-size:14px;font-weight:600;padding:8px 14px;border-radius:var(--r-sm);transition:all .15s;}
+.tab:hover{background:var(--panel-3);color:var(--text);}
+.tab.active{background:var(--accent-soft);color:var(--accent-ink);}
+.topbar-end{margin-inline-start:auto;display:flex;align-items:center;gap:14px;}
+.status-pill{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--text-dim);background:var(--panel-2);border:1px solid var(--border);padding:7px 12px;border-radius:var(--r-pill);}
+.status-pill .mono{color:var(--text);}
+.dot{width:8px;height:8px;border-radius:50%;background:#10B981;}
+.dot.live{animation:pulse 1.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.edit-pill{display:none;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--accent-ink);background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);padding:6px 8px 6px 12px;border-radius:var(--r-pill);}
+.edit-pill.show{display:flex;}
+.edit-pill button{border:none;background:rgba(79,70,229,.12);color:var(--accent-ink);border-radius:var(--r-pill);padding:3px 9px;font-size:12px;font-weight:600;}
 
-    /* Upload area */
-    .upload-zone {
-      border: 2px dashed #1e293b; border-radius: 10px; padding: 20px; text-align: center;
-      cursor: pointer; transition: all 0.2s; color: #475569; font-size: 13px;
-    }
-    .upload-zone:hover { border-color: #ea580c; color: #ea580c; }
-    .upload-zone.dragover { border-color: #ea580c; background: #ea580c08; }
-    .uploaded-files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .uploaded-file {
-      display: flex; align-items: center; gap: 6px; background: #1e293b; border-radius: 6px;
-      padding: 4px 10px; font-size: 12px; color: #94a3b8;
-    }
-    .uploaded-file .remove { cursor: pointer; color: #ef4444; margin-right: -4px; }
-    .uploaded-thumb { width: 48px; height: 36px; object-fit: cover; border-radius: 4px; }
-    .scene-upload-zone {
-      border: 2px dashed #1e293b; border-radius: 8px; padding: 10px; text-align: center;
-      cursor: pointer; transition: all 0.2s; color: #475569; font-size: 12px;
-      display: flex; align-items: center; gap: 8px; justify-content: center;
-    }
-    .scene-upload-zone:hover { border-color: #ea580c; color: #ea580c; }
-    .scene-upload-zone .upload-name { color: #94a3b8; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
-    .scene-upload-zone .uploaded-thumb { width: 40px; height: 30px; }
+/* panels */
+.panel{display:none;flex:1;}
+.panel.active{display:block;}
 
-    /* Generate bar */
-    .generate-bar {
-      padding: 12px 40px; background: #0f172a; border-bottom: 1px solid #1e293b;
-      display: flex; align-items: center; gap: 16px;
-    }
-    .progress-text { font-size: 13px; color: #94a3b8; flex: 1; }
-    .spinner { width: 16px; height: 16px; border: 2px solid #1e293b; border-top-color: #ea580c; border-radius: 50%; animation: spin 0.7s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+/* scenes */
+.scenes{display:grid;grid-template-columns:1fr 360px;gap:0;min-height:calc(100vh - 64px);}
+.stage{padding:26px 30px;display:flex;flex-direction:column;gap:18px;overflow:auto;}
+.stage-head{display:flex;align-items:center;justify-content:space-between;}
+.stage-head h2{margin:0;font-size:15px;font-weight:700;}
+.stage-head .eyebrow{display:block;margin-bottom:3px;}
+.preview-wrap{max-width:760px;width:100%;margin:0 auto;}
+.transport{display:flex;align-items:center;gap:14px;margin-top:14px;background:var(--panel);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;box-shadow:var(--shadow-xs);}
+.play-btn{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;border:none;display:grid;place-items:center;flex:none;box-shadow:var(--shadow);}
+.scrub{flex:1;}
+.scrub-track{display:flex;gap:3px;height:10px;}
+.seg{height:100%;border-radius:3px;background:var(--panel-3);position:relative;overflow:hidden;cursor:pointer;}
+.seg.cur{background:color-mix(in srgb,var(--accent) 45%,var(--panel-3));}
+.scrub-meta{display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--text-muted);gap:6px;flex-wrap:wrap;}
+.t-time{font-size:12.5px;color:var(--text-dim);flex:none;}
+.t-time b{color:var(--text);}
+.filmstrip{margin-top:4px;}
+.strip-row{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 14px;align-items:stretch;}
+.scene-card{flex:none;width:172px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--panel);overflow:hidden;transition:all .15s;cursor:pointer;box-shadow:var(--shadow-xs);}
+.scene-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--border-strong);}
+.scene-card.sel{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent),var(--shadow-md);}
+.scene-card.dragging{opacity:.4;}
+.scene-card.drag-over{border-color:var(--accent);border-style:dashed;}
+.thumb{aspect-ratio:16/9;position:relative;color:#fff;padding:13px;display:flex;flex-direction:column;justify-content:flex-end;}
+.thumb .tnum{position:absolute;top:8px;inset-inline-start:8px;font-size:10px;font-weight:700;background:rgba(0,0,0,.35);color:#fff;border-radius:5px;padding:2px 6px;}
+.thumb .ttype{position:absolute;top:8px;inset-inline-end:8px;font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:rgba(255,255,255,.85);}
+.thumb h4{margin:0;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.card-del{position:absolute;top:6px;inset-inline-end:6px;width:22px;height:22px;border-radius:50%;border:none;background:rgba(0,0,0,.4);color:#fff;font-size:15px;line-height:1;display:none;place-items:center;cursor:pointer;}
+.scene-card:hover .card-del{display:grid;}
+.scene-card:hover .ttype{display:none;}
+.card-del:hover{background:#DC2626;}
+.scene-meta{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-top:1px solid var(--border);}
+.scene-meta .dur{font-size:11px;color:var(--text-dim);}
+.scene-meta .hgrip{color:var(--text-muted);letter-spacing:1px;font-size:11px;cursor:grab;}
+.add-tile{flex:none;width:124px;border:1.5px dashed var(--border-strong);border-radius:var(--r-md);background:var(--panel-2);color:var(--text-dim);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-size:12.5px;font-weight:600;transition:all .15s;min-height:140px;}
+.add-tile:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+.add-tile .plus{width:32px;height:32px;border-radius:50%;background:var(--panel);display:grid;place-items:center;font-size:18px;box-shadow:var(--shadow-xs);}
+.type-chips{display:flex;flex-wrap:wrap;gap:7px;}
+.type-chip{border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:12.5px;font-weight:600;padding:6px 11px;border-radius:var(--r-pill);display:inline-flex;align-items:center;gap:6px;transition:all .15s;}
+.type-chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+.type-chip .pl{color:var(--text-muted);font-weight:700;}
+.type-chip:hover .pl{color:var(--accent);}
+.type-chip.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
 
-    /* Gallery */
-    .gallery-area { padding: 30px 40px; }
-    .gallery-title { font-size: 15px; font-weight: 600; color: #64748b; margin-bottom: 16px; }
-    .gallery-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;
-    }
-    .gallery-card {
-      background: #0f172a; border: 1px solid #1e293b; border-radius: 10px;
-      overflow: hidden; cursor: pointer; transition: all 0.2s;
-    }
-    .gallery-card:hover { border-color: #ea580c; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
-    .gallery-card video { width: 100%; height: 160px; object-fit: cover; background: #000; display: block; }
-    .gallery-card .card-body { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
-    .gallery-card .card-info { flex: 1; min-width: 0; }
-    .gallery-card .card-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .gallery-card .card-meta { font-size: 11px; color: #64748b; margin-top: 3px; }
-    .gallery-card .delete-btn { background: none; border: none; color: #64748b; font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
-    .gallery-card .delete-btn:hover { color: #ef4444; background: rgba(239,68,68,0.15); }
-    .gallery-card.playing { border-color: #ea580c; }
+/* transition connector between scene cards */
+.connector{flex:none;align-self:center;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:74px;}
+.connector .conn-line{width:100%;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--border-strong),var(--accent),var(--border-strong));opacity:.55;}
+.connector .conn-sel{appearance:none;border:1px solid var(--border);background:var(--panel);color:var(--accent-ink);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding:4px 8px;border-radius:var(--r-pill);text-align:center;cursor:pointer;box-shadow:var(--shadow-xs);}
+.connector .conn-sel:hover{border-color:var(--accent);}
+.connector .conn-cap{font-size:9px;color:var(--text-muted);}
 
-    /* Video player overlay */
-    .player-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-      z-index: 1000; justify-content: center; align-items: center; flex-direction: column; gap: 16px;
-    }
-    .player-overlay.open { display: flex; }
-    .player-overlay video { max-width: 90vw; max-height: 75vh; border-radius: 12px; }
-    .player-overlay .close-btn {
-      position: absolute; top: 20px; left: 20px; background: none; border: none;
-      color: #fff; font-size: 32px; cursor: pointer; opacity: 0.7;
-    }
-    .player-overlay .close-btn:hover { opacity: 1; }
-    .player-overlay .dl-link { color: #ea580c; font-size: 14px; text-decoration: none; }
-    .player-overlay .dl-link:hover { text-decoration: underline; }
+/* per-scene fx in inspector */
+.insp-section{border-top:1px solid var(--border);padding-top:16px;display:flex;flex-direction:column;gap:12px;}
+.insp-section .sec-lbl{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-dim);}
+.mini-fx{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.mini-chip{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 10px;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s;}
+.mini-chip:hover{border-color:var(--border-strong);background:var(--panel-2);}
+.mini-chip.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink);}
+.mini-chip .md{width:30px;height:17px;border-radius:999px;background:var(--border-strong);position:relative;flex:none;transition:all .15s;}
+.mini-chip .md::after{content:"";position:absolute;top:2px;inset-inline-end:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:all .15s;}
+.mini-chip.on .md{background:var(--accent);}
+.mini-chip.on .md::after{inset-inline-end:15px;}
 
-    /* Tooltip */
-    .tip { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; background: #1e293b; color: #64748b; font-size: 9px; font-weight: 700; cursor: help; position: relative; border: 1px solid #334155; flex-shrink: 0; }
-    .tip:hover { background: #ea580c; color: #fff; border-color: #ea580c; }
-    .tip .tt { display: none; position: fixed; background: #1e293b; color: #e2e8f0; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 400; z-index: 9999; border: 1px solid #334155; box-shadow: 0 8px 30px rgba(0,0,0,0.5); pointer-events: none; line-height: 1.5; width: 260px; white-space: normal; }
-    .tip .tt.show { display: block; }
+/* inspector */
+.inspector{border-inline-start:1px solid var(--border);background:var(--panel);padding:22px 22px 30px;overflow:auto;display:flex;flex-direction:column;gap:18px;}
+.insp-head{display:flex;align-items:center;gap:10px;}
+.insp-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:5px;}
+.insp-head h3{margin:0;font-size:15px;font-weight:700;}
+.insp-grid{display:flex;flex-direction:column;gap:14px;}
 
-    .empty-gallery { text-align: center; padding: 60px 20px; color: #1e293b; }
-    .empty-gallery .icon { font-size: 48px; margin-bottom: 12px; }
-    .empty-gallery .text { font-size: 16px; color: #334155; }
-  </style>
+/* sheet for project/audio/visual */
+.sheet{max-width:1080px;margin:0 auto;padding:34px 30px 80px;display:flex;flex-direction:column;gap:24px;}
+.sheet-head h1{margin:0 0 4px;font-size:22px;font-weight:700;}
+.sheet-head p{margin:0;color:var(--text-dim);font-size:13.5px;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-xs);}
+.card-pad{padding:22px 24px;}
+.card-title{font-size:14px;font-weight:700;margin:0 0 16px;display:flex;align-items:center;gap:9px;}
+.card-title .ico{width:26px;height:26px;border-radius:7px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px 22px;}
+.dropzone{border:1.5px dashed var(--border-strong);border-radius:var(--r-md);background:var(--panel-2);min-height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text-dim);font-size:12.5px;transition:all .15s;cursor:pointer;text-align:center;padding:10px;}
+.dropzone:hover,.dropzone.dragover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+.dropzone img{max-height:48px;border-radius:6px;}
+.file-pill{margin-top:8px;align-self:flex-start;font-size:11.5px;background:var(--panel-3);color:var(--text-dim);padding:4px 10px;border-radius:var(--r-pill);}
+
+/* gallery */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;}
+.vid-card{border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:var(--panel);box-shadow:var(--shadow-xs);transition:all .15s;}
+.vid-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.vid-card video{width:100%;aspect-ratio:16/9;object-fit:cover;background:#0B1020;display:block;cursor:pointer;}
+.vid-foot{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;gap:8px;}
+.vid-foot b{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vid-foot .tools{display:flex;gap:6px;flex:none;}
+.empty{grid-column:1/-1;text-align:center;padding:50px 20px;color:var(--text-muted);}
+.empty .ic{font-size:40px;margin-bottom:10px;}
+
+/* controls */
+.switch{width:42px;height:24px;border-radius:999px;background:var(--border-strong);position:relative;transition:all .15s;flex:none;cursor:pointer;}
+.switch::after{content:"";position:absolute;top:3px;inset-inline-end:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:var(--shadow-xs);transition:all .15s;}
+.switch.on{background:var(--accent);}
+.switch.on::after{inset-inline-end:21px;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-row .tl b{display:block;font-size:13.5px;font-weight:600;}
+.toggle-row .tl span{font-size:12px;color:var(--text-dim);}
+.seg-control{display:inline-flex;background:var(--panel-3);border-radius:var(--r-sm);padding:3px;gap:2px;}
+.seg-control button{border:none;background:transparent;color:var(--text-dim);font-size:12.5px;font-weight:600;padding:6px 14px;border-radius:6px;transition:all .15s;}
+.seg-control button.on{background:var(--panel);color:var(--text);box-shadow:var(--shadow-xs);}
+.swatches{display:flex;gap:12px;flex-wrap:wrap;}
+.swatch{width:96px;cursor:pointer;}
+.swatch .sw-box{height:58px;border-radius:var(--r-sm);border:2px solid transparent;transition:all .15s;}
+.swatch.sel .sw-box{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent);}
+.swatch span{display:block;margin-top:7px;font-size:12px;font-weight:600;text-align:center;color:var(--text-dim);}
+.fx-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 18px;}
+.fx-chip{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;cursor:pointer;transition:all .15s;font-size:13px;font-weight:600;}
+.fx-chip:hover{border-color:var(--border-strong);background:var(--panel-2);}
+.fx-chip.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink);}
+.fx-chip .mini{width:34px;height:20px;border-radius:999px;background:var(--border-strong);position:relative;flex:none;transition:all .15s;}
+.fx-chip .mini::after{content:"";position:absolute;top:2.5px;inset-inline-end:2.5px;width:15px;height:15px;border-radius:50%;background:#fff;transition:all .15s;}
+.fx-chip.on .mini{background:var(--accent);}
+.fx-chip.on .mini::after{inset-inline-end:16.5px;}
+
+/* player overlay */
+.player-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(6px);z-index:1000;justify-content:center;align-items:center;flex-direction:column;gap:16px;}
+.player-overlay.open{display:flex;}
+.player-overlay video{max-width:88vw;max-height:74vh;border-radius:var(--r-lg);box-shadow:var(--shadow-lg);}
+.player-overlay .close-x{position:absolute;top:20px;inset-inline-start:24px;width:40px;height:40px;border-radius:50%;background:var(--panel);border:1px solid var(--border);color:var(--text-dim);font-size:20px;display:grid;place-items:center;}
+.player-overlay .dl{color:#fff;font-size:14px;text-decoration:none;font-weight:600;display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.14);padding:9px 16px;border-radius:var(--r-pill);}
+.player-overlay .dl:hover{background:rgba(255,255,255,.24);}
+
+/* toast */
+.toast{position:fixed;bottom:22px;inset-inline-end:22px;z-index:1100;display:none;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--border);box-shadow:var(--shadow-lg);border-radius:var(--r-md);padding:12px 16px;min-width:240px;font-size:13.5px;font-weight:600;}
+.toast.show{display:flex;}
+.spinner{width:16px;height:16px;border:2px solid var(--panel-3);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex:none;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast .ok{color:#10B981;}.toast .err{color:#EF4444;}
+</style>
 </head>
 <body>
+<div class="app">
 
-<!-- Top bar -->
-<div class="topbar">
-  <h1>Studio Eylon</h1>
-  <span class="ver">Video Generator</span>
-  <div class="spacer"></div>
-  <div class="status" id="topStatus"></div>
-</div>
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M8 5.5v13l11-6.5-11-6.5z" fill="#fff"></path></svg></span>
+      <b>Studio Eylon</b>
+      <span class="badge">Video Generator</span>
+    </div>
+    <nav class="tabs">
+      <button class="tab active" data-tab="scenes" title="הסצנות, פס הזמן והתצוגה החיה">סצנות</button>
+      <button class="tab" data-tab="audio" title="קריינות, מוזיקה ואפקטי קול">אודיו</button>
+      <button class="tab" data-tab="visual" title="רקע, מעברים, color grade ואפקטים">מראה וסגנון</button>
+      <button class="tab" data-tab="project" title="פרטי הפרויקט, מיתוג ותבניות מוכנות">פרויקט</button>
+      <button class="tab" data-tab="motion" title="צור מושן גרפיקס מטקסט/פרומפט">מושן</button>
+      <button class="tab" data-tab="gallery" title="כל הוידאו שיצרת">גלריה</button>
+    </nav>
+    <div class="topbar-end">
+      <div class="edit-pill" id="editPill"><span>עורך: <b id="editingName"></b></span><button onclick="newVideo()" title="התחל פרויקט חדש וריק">+ חדש</button></div>
+      <span class="status-pill" title="מספר סצנות ואורך כולל"><span class="dot live"></span><span id="sceneCountTxt">0 סצנות</span> · <span class="mono" id="totalTime">00:00</span></span>
+      <button class="btn btn-primary" id="generateBtn" onclick="generate()" title="רנדר את הוידאו לקובץ MP4">צור וידאו</button>
+    </div>
+  </header>
 
-<!-- Form tabs -->
-<div class="form-area">
-  <div class="form-tabs">
-    <div class="form-tab active" onclick="showTab('project')">Project</div>
-    <div class="form-tab" onclick="showTab('visual')">Visual</div>
-    <div class="form-tab" onclick="showTab('audio')">Audio</div>
-    <div class="form-tab" onclick="showTab('scenes')">Scenes</div>
-  </div>
+  <!-- ===== SCENES ===== -->
+  <section class="panel active" id="panel-scenes">
+    <div class="scenes">
+      <div class="stage">
+        <div class="stage-head">
+          <div><span class="eyebrow" id="scenesEyebrow">סצנות</span><h2>תצוגה מקדימה</h2></div>
+        </div>
+        <div class="preview-wrap">
+          <div class="frame"><div id="playerMount" style="position:absolute;inset:0"></div></div>
+          <div style="text-align:center;margin-top:8px;font-size:11.5px;color:var(--text-muted)">תצוגה חיה · אפקטים, color grade ומעברים מתעדכנים תוך כדי עריכה</div>
+        </div>
+        <div class="filmstrip">
+          <span class="eyebrow" style="display:block;margin-bottom:10px">הוסף סצנה · בחר סוג</span>
+          <div class="type-chips" id="addChips" style="margin-bottom:18px"></div>
+          <span class="eyebrow" style="display:block;margin-bottom:10px">פס סצנות · גרור לסידור · לחץ לעריכה</span>
+          <div class="strip-row" id="scenesContainer"></div>
+        </div>
+      </div>
+      <aside class="inspector" id="inspector"></aside>
+    </div>
+  </section>
 
-  <div class="form-panels">
-
-    <!-- PROJECT -->
-    <div class="form-panel active" id="panel-project">
-      <div class="form-grid">
-        <div class="field">
-          <label><span class="tip" data-tip="Unique project folder name">?</span> Project Name</label>
-          <input type="text" id="projectName" placeholder="my-video" />
-        </div>
-        <div class="field">
-          <label><span class="tip" data-tip="Brand profile: colors, fonts, logo">?</span> Brand</label>
-          <select id="brand"><option value="digital-samba">Studio Eylon</option><option value="default">Default</option></select>
-        </div>
-        <div class="field">
-          <label><span class="tip" data-tip="Template type for default scene structure">?</span> Type</label>
-          <select id="videoType">
-            <option value="product-demo">Product Demo</option>
-            <option value="spotlight">Spotlight</option>
-            <option value="comparison">Comparison</option>
-            <option value="testimonial">Testimonial</option>
-            <option value="infographic">Infographic</option>
-            <option value="webinar">Webinar</option>
-          </select>
-        </div>
-        <div class="field">
-          <label><span class="tip" data-tip="Product name shown in titles and watermark">?</span> Product Name</label>
-          <input type="text" id="productName" value="Studio Eylon" />
-        </div>
-        <div class="field">
-          <label><span class="tip" data-tip="Subtitle under the product name in opening">?</span> Tagline</label>
-          <input type="text" id="productTagline" placeholder="Your tagline" />
-        </div>
-        <div class="field">
-          <label><span class="tip" data-tip="URL shown in CTA scene">?</span> Website</label>
-          <input type="text" id="productWebsite" placeholder="studioeylon.com" />
-        </div>
-        <div class="field">
-          <label><span class="tip" data-tip="Brand logo. Shown in watermark. PNG/SVG recommended.">?</span> Logo</label>
-          <div class="upload-zone" id="logoUpload" onclick="document.getElementById('logoFile').click()" style="padding:12px;font-size:12px;">
-            Drop logo or click
+  <!-- ===== PROJECT ===== -->
+  <section class="panel" id="panel-project">
+    <div class="sheet">
+      <div class="sheet-head"><h1>פרטי הפרויקט</h1><p>התחל מתבנית מוכנה, או הגדר מיתוג ופלט.</p></div>
+      <div class="card card-pad">
+        <h3 class="card-title"><span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg></span>תבניות מוכנות (דוגמאות)</h3>
+        <p style="margin:-6px 0 14px;color:var(--text-dim);font-size:13px">לחץ כדי לטעון סרטון לדוגמה עם סצנות וסגנון — ומשם ערוך.</p>
+        <div class="type-chips" id="presetChips"></div>
+      </div>
+      <div class="card card-pad">
+        <h3 class="card-title"><span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M8 12h8M12 8v8"></path></svg></span>זהות המוצר</h3>
+        <div class="form-grid">
+          <div class="field">
+            <label class="lbl">Logo <span class="q" title="לוגו המותג. מוצג בסימן המים. PNG/SVG מומלץ.">?</span></label>
+            <div class="dropzone" id="logoUpload" onclick="document.getElementById('logoFile').click()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4m0 0l-4 4m4-4l4 4"></path><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"></path></svg>גרור לוגו או לחץ</div>
+            <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="handleUpload('logo',this)">
+            <div id="logoPreview"></div>
           </div>
-          <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="handleUpload('logo', this)" />
-          <div class="uploaded-files" id="logoPreview"></div>
+          <div class="field"><label class="lbl">Project Name</label><input class="inp" id="projectName" placeholder="my-video" dir="ltr"></div>
+          <div class="field"><label class="lbl">Brand <span class="q" title="פרופיל מותג: צבעים, פונטים, לוגו">?</span></label><select class="sel" id="brand"><option value="digital-samba">Studio Eylon</option><option value="default">Default</option></select></div>
+          <div class="field"><label class="lbl">Product Name <span class="q" title="שם המוצר בכותרות ובסימן המים">?</span></label><input class="inp" id="productName" value="Studio Eylon" dir="ltr"></div>
+          <div class="field"><label class="lbl">Type <span class="q" title="סוג התבנית למבנה ברירת המחדל של הסצנות">?</span></label><select class="sel" id="videoType"><option value="product-demo">Product Demo</option><option value="spotlight">Spotlight</option><option value="comparison">Comparison</option><option value="testimonial">Testimonial</option><option value="infographic">Infographic</option><option value="webinar">Webinar</option></select></div>
+          <div class="field"><label class="lbl">Tagline <span class="q" title="כותרת משנה מתחת לשם המוצר">?</span></label><input class="inp" id="productTagline" placeholder="הסלוגן שלך"></div>
+          <div class="field"><label class="lbl">Website <span class="q" title="כתובת המוצגת בסצנת ה-CTA">?</span></label><input class="inp" id="productWebsite" placeholder="studioeylon.com" dir="ltr"></div>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- VISUAL -->
-    <div class="form-panel" id="panel-visual">
-      <div class="form-grid">
-        <div class="field">
-          <label><span class="tip" data-tip="RTL for Hebrew/Arabic — flips layout direction">?</span> Text Direction</label>
-          <select id="textDirection">
-            <option value="ltr">LTR (English)</option>
-            <option value="rtl">RTL (Hebrew / Arabic)</option>
-          </select>
+  <!-- ===== MOTION GRAPHICS ===== -->
+  <section class="panel" id="panel-motion">
+    <div class="sheet">
+      <div class="sheet-head"><h1>מושן גרפיקס</h1><p>כתוב טקסט או רעיון, בחר סגנון תנועה, ולחץ צור — המערכת תרנדר מושן עם Remotion ותציג אותו כאן.</p></div>
+
+      <div class="card card-pad">
+        <h3 class="card-title"><span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V5h16v2M9 20h6M12 5v15"></path></svg></span>פרומפט / טקסט</h3>
+        <textarea class="ta" id="motionPrompt" style="min-height:90px" placeholder="לדוגמה: רעיון חדש מתחיל כאן&#10;העתיד כבר הגיע" title="הטקסט שיונפש על המסך. כל שורה = שורה נפרדת.">רעיון חדש מתחיל כאן</textarea>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn" id="improveBtn" onclick="improveMotionPrompt()" title="מנסח מחדש את הטקסט לגרסה קצרה וקולעת יותר למושן">✨ שפר פרומפט</button>
         </div>
-        <div class="field">
-          <label><span class="tip" data-tip="Dark = floating shapes. Tech = grid. Warm = soft tones. Subtle = minimal.">?</span> Background</label>
-          <select id="background">
-            <option value="dark">Dark</option>
-            <option value="tech">Tech</option>
-            <option value="warm">Warm</option>
-            <option value="subtle">Subtle</option>
-          </select>
+      </div>
+
+      <div class="card card-pad">
+        <h3 class="card-title"><span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"></path></svg></span>סגנון תנועה (פריסטים)</h3>
+        <p style="margin:-6px 0 14px;color:var(--text-dim);font-size:13px">בחר איך הטקסט ייכנס ויונפש.</p>
+        <div class="type-chips" id="motionPresets"></div>
+        <p id="motionHint" style="margin:14px 0 0;color:var(--text-dim);font-size:12.5px">הטקסט בתיבת הפרומפט יונפש על המסך.</p>
+      </div>
+
+      <div class="card card-pad">
+        <h3 class="card-title"><span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M12 1v6m0 6v6"></path></svg></span>הגדרות</h3>
+        <div class="form-grid">
+          <div class="field"><label class="lbl">משך (שניות) <span class="q" title="אורך קליפ המושן">?</span></label><input class="inp mono" type="number" id="motionDuration" min="2" max="20" value="5"></div>
+          <div class="field"><label class="lbl">צבע הדגשה <span class="q" title="הצבע הדומיננטי באנימציה (זוהר/גרדיאנט)">?</span></label><input type="color" id="motionAccent" value="#4F46E5"></div>
+          <div class="field"><label class="lbl">רקע</label><select class="sel" id="motionBg"><option value="dark">כהה</option><option value="light">לבן</option><option value="sky">שמיים</option><option value="tech">טכנולוגי</option><option value="paper">נייר</option><option value="warm">חם</option></select></div>
+          <div class="field"><label class="lbl">רזולוציה</label><select class="sel" id="motionRes"><option value="1920x1080">1920×1080</option><option value="1080x1920">1080×1920 (אנכי)</option><option value="1080x1080">1080×1080 (ריבוע)</option></select></div>
         </div>
-        <div class="field">
-          <label><span class="tip" data-tip="Effect between scenes. Fade = smooth. Glitch = digital. Zoom = cinematic.">?</span> Transition</label>
-          <select id="transition">
-            <option value="fade">Fade</option><option value="slide">Slide</option><option value="wipe">Wipe</option>
-            <option value="zoom-blur">Zoom Blur</option><option value="glitch">Glitch</option><option value="rgb-split">RGB Split</option>
-            <option value="light-leak">Light Leak</option><option value="pixelate">Pixelate</option><option value="none">None</option>
-          </select>
+        <div style="margin-top:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-primary" id="motionCreateBtn" onclick="generateMotion()" title="מרנדר את המושן לקובץ MP4 ומציג אותו כאן">צור וידאו מושן</button>
+          <span id="motionStatus" style="font-size:13px;color:var(--text-dim)"></span>
         </div>
-        <div class="field">
-          <label><span class="tip" data-tip="How fast elements animate in">?</span> Speed</label>
-          <select id="animSpeed"><option value="slow">Slow</option><option value="normal" selected>Normal</option><option value="fast">Fast</option></select>
+      </div>
+
+      <div class="card card-pad" id="motionResultCard" style="display:none">
+        <h3 class="card-title"><span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M10 9l5 3-5 3V9z"></path></svg></span>התוצאה</h3>
+        <video id="motionResult" controls style="width:100%;border-radius:12px;background:#0B1020;aspect-ratio:16/9"></video>
+        <a class="btn" id="motionDownload" href="#" download style="margin-top:12px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"></path></svg>הורד MP4</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== GALLERY ===== -->
+  <section class="panel" id="panel-gallery">
+    <div class="sheet">
+      <div class="sheet-head" style="display:flex;align-items:flex-end;justify-content:space-between">
+        <div><h1>הגלריה שלי</h1><p>כל הוידאו שיצרת. לחץ לנגן, ✎ לערוך, ▦ ל-Studio.</p></div>
+        <button class="btn btn-ghost" onclick="loadGallery()">רענן</button>
+      </div>
+      <div class="gallery" id="galleryGrid"></div>
+    </div>
+  </section>
+
+  <!-- ===== AUDIO ===== -->
+  <section class="panel" id="panel-audio">
+    <div class="sheet">
+      <div class="sheet-head"><h1>קול ומוזיקה</h1><p>קריינות AI, פסקול ואפקטים — מתערבבים אוטומטית מול הנרטיב של הסצנות.</p></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card card-pad">
+          <h3 class="card-title"><span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M8 7v10M16 7v10M4 10v4M20 10v4"></path></svg></span>קריינות (Voiceover)</h3>
+          <div class="toggle-row"><div class="tl"><b>הפעל קריינות</b><span>נוצר מהטקסט של כל סצנה</span></div><div class="switch" data-toggle="voiceoverEnabled"></div></div>
+          <input type="checkbox" id="voiceoverEnabled" checked hidden>
+          <div class="field" style="margin-top:16px"><label class="lbl">Voice <span class="q" title="לחץ ▶ לתצוגה מקדימה">?</span></label>
+            <div style="display:flex;gap:8px">
+              <select class="sel" id="voice" style="flex:1">
+                <optgroup label="Hebrew"><option value="he-IL-AvriNeural">Avri (זכר)</option><option value="he-IL-HilaNeural">Hila (נקבה)</option></optgroup>
+                <optgroup label="English - Male"><option value="en-GB-RyanNeural">Ryan (British)</option><option value="en-US-GuyNeural">Guy (American)</option><option value="en-US-AndrewNeural">Andrew (American)</option><option value="en-AU-WilliamNeural">William (Australian)</option><option value="en-IE-ConnorNeural">Connor (Irish)</option></optgroup>
+                <optgroup label="English - Female"><option value="en-US-JennyNeural">Jenny (American)</option><option value="en-GB-SoniaNeural">Sonia (British)</option><option value="en-US-AriaNeural">Aria (American)</option><option value="en-AU-NatashaNeural">Natasha (Australian)</option></optgroup>
+                <optgroup label="Spanish"><option value="es-ES-AlvaroNeural">Alvaro</option><option value="es-MX-DaliaNeural">Dalia</option></optgroup>
+                <optgroup label="French"><option value="fr-FR-HenriNeural">Henri</option><option value="fr-FR-DeniseNeural">Denise</option></optgroup>
+                <optgroup label="German"><option value="de-DE-ConradNeural">Conrad</option><option value="de-DE-KatjaNeural">Katja</option></optgroup>
+                <optgroup label="Arabic"><option value="ar-SA-HamedNeural">Hamed</option><option value="ar-SA-ZariyahNeural">Zariyah</option></optgroup>
+              </select>
+              <button class="icon-btn" onclick="previewVoice(this)" title="תצוגה מקדימה">&#9654;</button>
+            </div>
+            <audio id="voicePreviewAudio" style="display:none"></audio>
+          </div>
+          <div class="field" style="margin-top:16px"><label class="lbl">Speed</label><select class="sel" id="voiceRate"><option value="-15%">איטי</option><option value="-5%" selected>טבעי</option><option value="+5%">מהיר</option></select></div>
         </div>
-        <div class="field">
-          <label><span class="tip" data-tip="Output dimensions. HD = web. Vertical = Reels/TikTok. Square = Instagram.">?</span> Resolution</label>
-          <select id="resolution">
-            <option value="1920x1080">1920x1080 (HD)</option>
-            <option value="1080x1920">1080x1920 (Vertical)</option>
-            <option value="1080x1080">1080x1080 (Square)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Overlays</label>
-          <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px;">
-            <div class="toggle"><input type="checkbox" id="vignetteEnabled" checked /><label for="vignetteEnabled">Vignette</label></div>
-            <div class="toggle"><input type="checkbox" id="grainEnabled" /><label for="grainEnabled">Film Grain</label></div>
-            <div class="toggle"><input type="checkbox" id="watermarkEnabled" checked /><label for="watermarkEnabled">Logo Watermark</label></div>
+        <div class="card card-pad">
+          <h3 class="card-title"><span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></span>מוזיקה ואפקטים</h3>
+          <div class="toggle-row"><div class="tl"><b>פסקול רקע</b><span>טראק אמביינט מתחת לקריינות</span></div><div class="switch" data-toggle="musicEnabled"></div></div>
+          <input type="checkbox" id="musicEnabled" checked hidden>
+          <div class="field" style="margin-top:16px"><label class="lbl">עוצמה</label><input type="range" id="musicVolume" min="0" max="0.4" step="0.02" value="0.1"></div>
+          <div class="field" style="margin-top:16px"><label class="lbl">העלה מוזיקה משלך <span class="q" title="קובץ MP3/WAV שישמש כפסקול הרקע במקום המוזיקה האוטומטית">?</span></label>
+            <div class="dropzone" id="musicUpload" onclick="document.getElementById('musicFile').click()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>גרור MP3/WAV או לחץ</div>
+            <input type="file" id="musicFile" accept="audio/*" style="display:none" onchange="handleMusicUpload(this)">
+            <input type="hidden" id="musicCustomFile" value="">
+            <div id="musicPreview"></div>
+          </div>
+          <div class="toggle-row" style="margin-top:8px"><div class="tl"><b>אפקטי קול (SFX)</b><span>צלילי וווש / קליק / בום אוטומטיים במעברים בין סצנות</span></div><div class="switch" data-toggle="sfxEnabled"></div></div>
+          <input type="checkbox" id="sfxEnabled" checked hidden>
+          <div class="field" style="margin-top:14px"><label class="lbl">האזן לאפקטי הקול <span class="q" title="לחץ ▶ כדי לשמוע כל אפקט. אלו הצלילים שישולבו אוטומטית במעברים.">?</span></label>
+            <div id="sfxPalette" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+            <audio id="sfxAudio" style="display:none"></audio>
           </div>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- AUDIO -->
-    <div class="form-panel" id="panel-audio">
-      <div class="form-grid">
-        <div class="field">
-          <div class="toggle"><input type="checkbox" id="voiceoverEnabled" checked /><label for="voiceoverEnabled"><span class="tip" data-tip="AI narration using Microsoft Edge TTS. Free, no API key.">?</span> Voiceover</label></div>
+  <!-- ===== VISUAL ===== -->
+  <section class="panel" id="panel-visual">
+    <div class="sheet">
+      <div class="sheet-head"><h1>מראה וסגנון</h1><p>רקע, מעברים, color grade ושכבות-על שמשפיעים על כל הסצנות.</p></div>
+      <div class="card card-pad">
+        <h3 class="card-title"><span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 3a9 9 0 000 18"></path></svg></span>רקע ותנועה</h3>
+        <input type="hidden" id="background" value="dark">
+        <div class="swatches" data-set="background">
+          <div class="swatch" data-value="dark"><div class="sw-box" style="background:#0B1020"></div><span>כהה</span></div>
+          <div class="swatch" data-value="tech"><div class="sw-box" style="background:radial-gradient(120% 120% at 80% 10%,#0E7490,#07141A)"></div><span>טכנולוגי</span></div>
+          <div class="swatch" data-value="warm"><div class="sw-box" style="background:radial-gradient(120% 120% at 80% 10%,#B45309,#1A1410)"></div><span>חם</span></div>
+          <div class="swatch" data-value="subtle"><div class="sw-box" style="background:radial-gradient(120% 120% at 80% 10%,#1E293B,#0B1020)"></div><span>עדין</span></div>
+          <div class="swatch" data-value="light"><div class="sw-box" style="background:#ffffff;border:1px solid #E2E8F0"></div><span>לבן</span></div>
+          <div class="swatch" data-value="paper"><div class="sw-box" style="background:radial-gradient(120% 120% at 80% 10%,#ece2cf,#f7f1e6)"></div><span>נייר</span></div>
+          <div class="swatch" data-value="sky"><div class="sw-box" style="background:radial-gradient(120% 120% at 80% 10%,#d6e7fb,#eef5fd)"></div><span>שמיים</span></div>
         </div>
-        <div class="field">
-          <label><span class="tip" data-tip="Click ▶ to preview before choosing">?</span> Voice</label>
-          <div style="display:flex;gap:6px;">
-            <select id="voice" style="flex:1;">
-              <optgroup label="English - Male">
-                <option value="en-GB-RyanNeural">Ryan (British)</option>
-                <option value="en-US-GuyNeural">Guy (American)</option>
-                <option value="en-US-AndrewNeural">Andrew (American)</option>
-                <option value="en-AU-WilliamNeural">William (Australian)</option>
-                <option value="en-IE-ConnorNeural">Connor (Irish)</option>
-              </optgroup>
-              <optgroup label="English - Female">
-                <option value="en-US-JennyNeural">Jenny (American)</option>
-                <option value="en-GB-SoniaNeural">Sonia (British)</option>
-                <option value="en-US-AriaNeural">Aria (American)</option>
-                <option value="en-AU-NatashaNeural">Natasha (Australian)</option>
-              </optgroup>
-              <optgroup label="Hebrew"><option value="he-IL-AvriNeural">Avri (Male)</option><option value="he-IL-HilaNeural">Hila (Female)</option></optgroup>
-              <optgroup label="Spanish"><option value="es-ES-AlvaroNeural">Alvaro</option><option value="es-MX-DaliaNeural">Dalia</option></optgroup>
-              <optgroup label="French"><option value="fr-FR-HenriNeural">Henri</option><option value="fr-FR-DeniseNeural">Denise</option></optgroup>
-              <optgroup label="German"><option value="de-DE-ConradNeural">Conrad</option><option value="de-DE-KatjaNeural">Katja</option></optgroup>
-              <optgroup label="Arabic"><option value="ar-SA-HamedNeural">Hamed</option><option value="ar-SA-ZariyahNeural">Zariyah</option></optgroup>
-              <optgroup label="Japanese"><option value="ja-JP-KeitaNeural">Keita</option><option value="ja-JP-NanamiNeural">Nanami</option></optgroup>
-              <optgroup label="Chinese"><option value="zh-CN-YunxiNeural">Yunxi</option><option value="zh-CN-XiaoxiaoNeural">Xiaoxiao</option></optgroup>
-              <optgroup label="Russian"><option value="ru-RU-DmitryNeural">Dmitry</option><option value="ru-RU-SvetlanaNeural">Svetlana</option></optgroup>
-            </select>
-            <button class="btn btn-secondary btn-sm" onclick="previewVoice()" title="Preview voice">&#9654;</button>
+        <div class="field" style="margin-top:20px"><label class="lbl">תמונת רקע מותאמת <span class="q" title="תמונה שתמלא את כל הרקע מאחורי כל הסצנות. גוברת על בחירת הרקע למעלה.">?</span></label>
+          <div class="dropzone" id="bgUpload" onclick="document.getElementById('bgFile').click()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="M21 15l-5-5L5 21"></path></svg>גרור תמונה או לחץ</div>
+          <input type="file" id="bgFile" accept="image/*" style="display:none" onchange="handleBgUpload(this)">
+          <input type="hidden" id="bgImage" value="">
+          <div id="bgPreview"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px;margin-top:24px">
+          <div class="field"><label class="lbl">Transition</label><select class="sel" id="transition"><option value="fade">Fade</option><option value="slide">Slide</option><option value="wipe">Wipe</option><option value="flip">Flip</option><option value="clock-wipe">Clock Wipe</option><option value="checkerboard">Checkerboard</option><option value="zoom-blur">Zoom Blur</option><option value="glitch">Glitch</option><option value="rgb-split">RGB Split</option><option value="light-leak">Light Leak</option><option value="pixelate">Pixelate</option><option value="none">None</option></select></div>
+          <div class="field"><label class="lbl">Animation speed</label><input type="hidden" id="animSpeed" value="normal"><div class="seg-control" data-set="animSpeed"><button data-value="slow">Slow</button><button data-value="normal">Normal</button><button data-value="fast">Fast</button></div></div>
+          <div class="field"><label class="lbl">Resolution</label><select class="sel" id="resolution"><option value="1920x1080">1920×1080 (HD)</option><option value="1080x1920">1080×1920 (Vertical)</option><option value="1080x1080">1080×1080 (Square)</option></select></div>
+          <div class="field"><label class="lbl">Text Direction</label><select class="sel" id="textDirection"><option value="ltr">LTR (English)</option><option value="rtl">RTL (עברית/ערבית)</option></select></div>
+          <div class="field"><label class="lbl">Color Grade <span class="q" title="צביעה קולנועית על כל הפריים">?</span></label><select class="sel" id="colorGrade"><option value="none">None</option><option value="cinematic">Cinematic</option><option value="vibrant">Vibrant</option><option value="teal-orange">Teal &amp; Orange</option><option value="bleach-bypass">Bleach Bypass</option><option value="technicolor">Technicolor</option><option value="infrared">Infrared</option><option value="matrix">Matrix</option><option value="warm">Warm</option><option value="cold">Cold</option><option value="dreamy">Dreamy</option><option value="vintage">Vintage</option><option value="sepia">Sepia</option><option value="polaroid">Polaroid</option><option value="noir">Noir (B&amp;W)</option></select></div>
+          <div class="field"><label class="lbl">Effect Intensity</label><input type="range" id="fxIntensity" min="0" max="1.5" step="0.1" value="1"></div>
+        </div>
+      </div>
+
+      <div class="card card-pad">
+        <h3 class="card-title"><span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></span>שכבות-על</h3>
+        <div class="toggle-row"><div class="tl"><b>Vignette</b><span>החשכת קצוות קולנועית</span></div><div class="switch" data-toggle="vignetteEnabled"></div></div>
+        <div class="toggle-row"><div class="tl"><b>Film grain</b><span>מרקם פילם דק</span></div><div class="switch" data-toggle="grainEnabled"></div></div>
+        <div class="toggle-row"><div class="tl"><b>Logo watermark</b><span>סימן מים פינתי</span></div><div class="switch" data-toggle="watermarkEnabled"></div></div>
+        <div class="toggle-row"><div class="tl"><b>כתוביות</b><span>נבנות מה-Narration של כל סצנה — ומוצגות על הוידאו</span></div><div class="switch" data-toggle="captionsEnabled"></div></div>
+        <input type="checkbox" id="vignetteEnabled" checked hidden>
+        <input type="checkbox" id="grainEnabled" hidden>
+        <input type="checkbox" id="watermarkEnabled" checked hidden>
+        <input type="checkbox" id="captionsEnabled" checked hidden>
+      </div>
+
+      <div class="card card-pad">
+        <h3 class="card-title"><span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"></path></svg></span>אפקטים קולנועיים</h3>
+        <div class="fx-grid">
+          <div class="fx-chip" data-toggle="fxGlow"><span>Glow</span><span class="mini"></span></div>
+          <div class="fx-chip" data-toggle="fxBloom"><span>Bloom</span><span class="mini"></span></div>
+          <div class="fx-chip" data-toggle="fxLightLeaks"><span>Light Leaks</span><span class="mini"></span></div>
+          <div class="fx-chip" data-toggle="fxLightRays"><span>Light Rays</span><span class="mini"></span></div>
+          <div class="fx-chip" data-toggle="fxBokeh"><span>Bokeh</span><span class="mini"></span></div>
+          <div class="fx-chip" data-toggle="fxScanlines"><span>Scanlines</span><span class="mini"></span></div>
+          <div class="fx-chip" data-toggle="fxVhs"><span>VHS</span><span class="mini"></span></div>
+          <div class="fx-chip" data-toggle="fxDust"><span>Film Dust</span><span class="mini"></span></div>
+        </div>
+        <input type="checkbox" id="fxGlow" hidden><input type="checkbox" id="fxBloom" hidden><input type="checkbox" id="fxScanlines" hidden><input type="checkbox" id="fxLightLeaks" hidden><input type="checkbox" id="fxLightRays" hidden><input type="checkbox" id="fxBokeh" hidden><input type="checkbox" id="fxVhs" hidden><input type="checkbox" id="fxDust" hidden>
+        <div style="display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-top:18px">
+          <div class="fx-chip" data-toggle="fxColorWash" style="flex:0 0 auto"><span>Color Wash</span><span class="mini"></span></div>
+          <input type="checkbox" id="fxColorWash" hidden>
+          <label class="lbl" style="margin:0;gap:10px">Tint <input type="color" id="fxWashColor" value="#ff7a18"></label>
+          <div class="fx-chip" data-toggle="fxLetterbox" style="flex:0 0 auto"><span>Letterbox</span><span class="mini"></span></div>
+          <input type="checkbox" id="fxLetterbox" hidden>
+          <select class="sel" id="fxLetterboxRatio" style="width:auto"><option value="2.39">2.39:1</option><option value="2.0">2.0:1</option><option value="1.85">1.85:1</option></select>
+        </div>
+      </div>
+
+      <div class="card card-pad">
+        <h3 class="card-title"><span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V5h16v2M9 20h6M12 5v15"></path></svg></span>כתוביות וכותרות</h3>
+        <div class="form-grid">
+          <div class="field"><label class="lbl">צבע כתוביות <span class="q" title="צבע טקסט הכתוביות">?</span></label><input type="color" id="capColor" value="#ffffff"></div>
+          <div class="field"><label class="lbl">גודל כתוביות <span class="q" title="גודל הפונט של הכתוביות">?</span></label><input type="range" id="capSize" min="18" max="64" step="1" value="34"></div>
+          <div class="field"><label class="lbl">מיקום</label><input type="hidden" id="capPosition" value="bottom"><div class="seg-control" data-set="capPosition"><button data-value="bottom" title="כתוביות בתחתית">תחתית</button><button data-value="top" title="כתוביות בראש">ראש</button></div></div>
+        </div>
+        <div class="toggle-row" style="margin-top:6px"><div class="tl"><b>רקע לכתוביות</b><span>פס כהה מאחורי הטקסט לקריאות</span></div><div class="switch" data-toggle="capBackground"></div></div>
+        <input type="checkbox" id="capBackground" checked hidden>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px">
+          <div>
+            <div class="toggle-row" style="padding-top:0"><div class="tl"><b>צבע כותרות מותאם</b><span>צבע הטקסט של הכותרות בכל הסצנות</span></div><div class="switch" data-toggle="titleColorOn"></div></div>
+            <input type="checkbox" id="titleColorOn" hidden>
+            <label class="lbl" style="margin-top:10px;gap:10px">צבע כותרת <input type="color" id="titleColor" value="#ffffff" title="צבע הכותרות"></label>
           </div>
-          <audio id="voicePreviewAudio" style="display:none;"></audio>
-        </div>
-        <div class="field">
-          <label><span class="tip" data-tip="Speaking pace">?</span> Speed</label>
-          <select id="voiceRate"><option value="-15%">Slow</option><option value="-5%" selected>Natural</option><option value="+5%">Fast</option></select>
-        </div>
-        <div class="field">
-          <div class="toggle"><input type="checkbox" id="musicEnabled" checked /><label for="musicEnabled"><span class="tip" data-tip="Ambient synth background track">?</span> Music</label></div>
-        </div>
-        <div class="field">
-          <label>Volume</label>
-          <input type="range" id="musicVolume" min="0" max="0.4" step="0.02" value="0.1" style="padding:0;" />
-        </div>
-        <div class="field">
-          <div class="toggle"><input type="checkbox" id="sfxEnabled" checked /><label for="sfxEnabled"><span class="tip" data-tip="Whoosh, click, boom at transitions">?</span> SFX</label></div>
+          <div>
+            <div class="toggle-row" style="padding-top:0"><div class="tl"><b>צבע הדגשה מותאם</b><span>צבע ההדגשה/אקסנט בסצנות</span></div><div class="switch" data-toggle="accentColorOn"></div></div>
+            <input type="checkbox" id="accentColorOn" hidden>
+            <label class="lbl" style="margin-top:10px;gap:10px">צבע אקסנט <input type="color" id="accentColor" value="#4F46E5" title="צבע ההדגשה"></label>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- SCENES -->
-    <div class="form-panel" id="panel-scenes">
-      <div class="scenes-row" id="scenesContainer"></div>
-      <div class="add-scene-btns">
-        <button class="btn btn-secondary btn-sm" onclick="addScene('title')">+ Title</button>
-        <button class="btn btn-secondary btn-sm" onclick="addScene('problem')">+ Problem</button>
-        <button class="btn btn-secondary btn-sm" onclick="addScene('solution')">+ Solution</button>
-        <button class="btn btn-secondary btn-sm" onclick="addScene('stats')">+ Stats</button>
-        <button class="btn btn-secondary btn-sm" onclick="addScene('cta')">+ CTA</button>
-        <button class="btn btn-secondary btn-sm" onclick="addScene('spotlight')">+ Spotlight</button>
-        <button class="btn btn-secondary btn-sm" onclick="addScene('comparison')">+ Comparison</button>
-        <button class="btn btn-secondary btn-sm" onclick="addScene('testimonial')">+ Testimonial</button>
-        <button class="btn btn-secondary btn-sm" onclick="addScene('demo')">+ Video</button>
-        <button class="btn btn-secondary btn-sm" onclick="addScene('image')">+ Image</button>
-      </div>
-    </div>
-
-    <!-- Hidden file inputs for scene-level uploads -->
-    <input type="file" id="sceneImageFile" accept="image/*" style="display:none" />
-    <input type="file" id="sceneVideoFile" accept="video/*" style="display:none" />
-
-  </div>
+  </section>
 </div>
 
-<!-- Generate bar -->
-<div class="generate-bar">
-  <button class="btn btn-primary" id="generateBtn" onclick="generate()" style="padding:10px 32px;">Generate Video</button>
-  <div id="progressArea" style="display:none;display:flex;align-items:center;gap:10px;">
-    <div class="spinner" id="genSpinner"></div>
-    <span class="progress-text" id="progressText">Starting...</span>
-  </div>
-</div>
+<!-- hidden scene file inputs -->
+<input type="file" id="sceneImageFile" accept="image/*" style="display:none">
+<input type="file" id="sceneVideoFile" accept="video/*" style="display:none">
 
-<!-- Gallery -->
-<div class="gallery-area">
-  <div class="gallery-title">Gallery</div>
-  <div class="gallery-grid" id="galleryGrid">
-    <div class="empty-gallery">
-      <div class="icon">🎬</div>
-      <div class="text">Your generated videos will appear here</div>
-    </div>
-  </div>
-</div>
-
-<!-- Video Player Overlay -->
+<!-- player overlay -->
 <div class="player-overlay" id="playerOverlay" onclick="if(event.target===this)closePlayer()">
-  <button class="close-btn" onclick="closePlayer()">&times;</button>
+  <button class="close-x" onclick="closePlayer()">&times;</button>
   <video id="overlayVideo" controls></video>
-  <a class="dl-link" id="overlayDownload" href="#" download>Download MP4</a>
+  <a class="dl" id="overlayDownload" href="#" download><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"></path></svg>הורד MP4</a>
 </div>
+
+<!-- toast -->
+<div class="toast" id="toast"><span class="spinner" id="toastSpin"></span><span id="toastText"></span></div>
+
+<!-- live Remotion Player bundle -->
+<script src="/app/player/bundle.js"></script>
 
 <script>
-const API = '';
-let scenes = [];
-let uploadedFiles = { logo: null, images: [], videos: [] };
+const API='';
+let scenes=[];
+let uploadedFiles={logo:null,images:[],videos:[]};
+let projectConfigs={};
+let editingProject=null;
+let selectedSceneIdx=0;
 
-// ============================================
-// Tabs
-// ============================================
-function showTab(id) {
-  document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + id).classList.add('active');
-  event.target.classList.add('active');
+// ============== Tabs ==============
+function showTabByName(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(id==='audio'&&!sfxData)renderSfxPalette();
+  window.scrollTo({top:0});
 }
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>showTabByName(t.dataset.tab)));
 
-// ============================================
-// Tooltips
-// ============================================
-document.addEventListener('mouseenter', (e) => {
-  const el = e.target.closest('.tip');
-  if (!el) return;
-  let tt = el.querySelector('.tt');
-  if (!tt) { tt = document.createElement('span'); tt.className = 'tt'; tt.textContent = el.dataset.tip; el.appendChild(tt); }
-  const r = el.getBoundingClientRect();
-  tt.classList.add('show');
-  let left = r.left - 270; let top = r.top + r.height/2 - tt.offsetHeight/2;
-  if (left < 8) { left = r.left; top = r.bottom + 8; }
-  if (top < 8) top = 8;
-  if (top + tt.offsetHeight > innerHeight - 8) top = innerHeight - tt.offsetHeight - 8;
-  tt.style.left = left + 'px'; tt.style.top = top + 'px';
-}, true);
-document.addEventListener('mouseleave', (e) => {
-  const el = e.target.closest('.tip'); if (!el) return;
-  const tt = el.querySelector('.tt'); if (tt) tt.classList.remove('show');
-}, true);
-
-// Auto RTL on Hebrew/Arabic voice
-document.getElementById('voice').addEventListener('change', function() {
-  if (this.value.startsWith('he-') || this.value.startsWith('ar-')) document.getElementById('textDirection').value = 'rtl';
-  else document.getElementById('textDirection').value = 'ltr';
+// auto RTL on Hebrew/Arabic voice
+document.getElementById('voice').addEventListener('change',function(){
+  document.getElementById('textDirection').value=(this.value.startsWith('he-')||this.value.startsWith('ar-'))?'rtl':'ltr';
 });
 
-// ============================================
-// Scenes
-// ============================================
-const SF = {
-  title: [
-    { k:'headline', l:'Headline', t:'text', p:'Main title', tip:'Big opening text' },
-    { k:'subheadline', l:'Subtitle', t:'text', p:'Optional subtitle' },
-    { k:'narration', l:'Narration', t:'ta', p:'Voiceover text', tip:'Spoken by AI voice' },
-    { k:'duration', l:'Sec', t:'num', v:5, tip:'Scene duration' },
-  ],
-  problem: [
-    { k:'headline', l:'Headline', t:'text', p:'Problem statement' },
-    { k:'bullets', l:'Problems', t:'ta', p:'One per line', tip:'Each gets an animated card' },
-    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
-    { k:'duration', l:'Sec', t:'num', v:7 },
-  ],
-  solution: [
-    { k:'headline', l:'Headline', t:'text', p:'Your solution' },
-    { k:'description', l:'Description', t:'text', p:'One line' },
-    { k:'highlights', l:'Highlights', t:'ta', p:'One per line', tip:'Animated cards' },
-    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
-    { k:'duration', l:'Sec', t:'num', v:6 },
-  ],
-  stats: [
-    { k:'headline', l:'Headline', t:'text', p:'Stats title' },
-    { k:'stats_raw', l:'Stats', t:'ta', p:'99% | Uptime\\n5 min | Setup', tip:'value | label per line' },
-    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
-    { k:'duration', l:'Sec', t:'num', v:7 },
-  ],
-  cta: [
-    { k:'headline', l:'Headline', t:'text', p:'Call to action' },
-    { k:'tagline', l:'Tagline', t:'text', p:'Supporting text' },
-    { k:'url', l:'URL', t:'text', p:'yoursite.com' },
-    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
-    { k:'duration', l:'Sec', t:'num', v:5 },
-  ],
-  spotlight: [
-    { k:'icon', l:'Icon', t:'text', p:'🎨', v:'🎨' },
-    { k:'feature', l:'Feature', t:'text', p:'Feature name' },
-    { k:'tagline', l:'Tagline', t:'text', p:'One line' },
-    { k:'bullets', l:'Points', t:'ta', p:'One per line' },
-    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
-    { k:'duration', l:'Sec', t:'num', v:15 },
-  ],
-  comparison: [
-    { k:'headline', l:'Headline', t:'text', p:'How we compare' },
-    { k:'rows_raw', l:'Rows', t:'ta', p:'Feature | Ours | Others', tip:'Use Yes/No for icons' },
-    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
-    { k:'duration', l:'Sec', t:'num', v:12 },
-  ],
-  testimonial: [
-    { k:'quote', l:'Quote', t:'ta', p:'Customer quote' },
-    { k:'author', l:'Author', t:'text', p:'Name' },
-    { k:'role', l:'Role', t:'text', p:'CTO' },
-    { k:'company', l:'Company', t:'text', p:'Acme Corp' },
-    { k:'rating', l:'Stars', t:'num', v:5 },
-    { k:'duration', l:'Sec', t:'num', v:10 },
-  ],
-  demo: [
-    { k:'videoFile', l:'Video', t:'upload-video' },
-    { k:'label', l:'Title', t:'text', p:'Optional title above video' },
-    { k:'demoType', l:'Type', t:'text', p:'browser / terminal / raw', v:'browser', tip:'Window chrome style' },
-    { k:'caption', l:'Caption', t:'text', p:'Description below video' },
-    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
-    { k:'duration', l:'Sec', t:'num', v:10 },
-  ],
-  image: [
-    { k:'imageSrc', l:'Image', t:'upload-image' },
-    { k:'headline', l:'Headline', t:'text', p:'Optional title' },
-    { k:'caption', l:'Caption', t:'text', p:'Optional caption' },
-    { k:'layout', l:'Layout', t:'text', p:'fullscreen / contain / split', v:'fullscreen', tip:'How image is displayed' },
-    { k:'narration', l:'Narration', t:'ta', p:'Voiceover' },
-    { k:'duration', l:'Sec', t:'num', v:6 },
-  ],
+// ============== Custom controls -> hidden inputs ==============
+function initControls(){
+  document.querySelectorAll('[data-toggle]').forEach(el=>{
+    if(el.__wired)return; el.__wired=1;
+    if(!el.title){const lbl=(el.closest('.toggle-row')&&el.closest('.toggle-row').querySelector('b'))||el.querySelector('span');el.title='הפעלה / כיבוי'+(lbl?' · '+lbl.textContent:'');}
+    el.addEventListener('click',()=>{
+      const inp=document.getElementById(el.dataset.toggle);
+      inp.checked=!inp.checked; el.classList.toggle('on',inp.checked);
+      pushPreview();
+    });
+  });
+  document.querySelectorAll('[data-set]').forEach(group=>{
+    if(group.__wired)return; group.__wired=1;
+    group.querySelectorAll('[data-value]').forEach(btn=>{
+      if(!btn.title){const sp=btn.querySelector('span');btn.title='בחר: '+((sp&&sp.textContent)||btn.textContent||btn.dataset.value);}
+      btn.addEventListener('click',()=>{
+        document.getElementById(group.dataset.set).value=btn.dataset.value;
+        group.querySelectorAll('[data-value]').forEach(b=>b.classList.remove('on','sel'));
+        btn.classList.add(group.classList.contains('swatches')?'sel':'on');
+        pushPreview();
+      });
+    });
+  });
+  syncControls();
+}
+function syncControls(){
+  document.querySelectorAll('[data-toggle]').forEach(el=>{
+    const inp=document.getElementById(el.dataset.toggle);
+    el.classList.toggle('on',!!(inp&&inp.checked));
+  });
+  document.querySelectorAll('[data-set]').forEach(group=>{
+    const v=document.getElementById(group.dataset.set).value;
+    const isSw=group.classList.contains('swatches');
+    group.querySelectorAll('[data-value]').forEach(b=>b.classList.toggle(isSw?'sel':'on',b.dataset.value===v));
+  });
+}
+
+// ============== Scene field schemas ==============
+const SF={
+  title:[{k:'headline',l:'Headline',t:'text',p:'Main title',tip:'הכותרת הגדולה'},{k:'subheadline',l:'Subtitle',t:'text',p:'Optional subtitle'},{k:'narration',l:'Narration',t:'ta',p:'Voiceover text',tip:'נאמר ע"י קול ה-AI'},{k:'duration',l:'Sec',t:'num',v:5}],
+  problem:[{k:'headline',l:'Headline',t:'text',p:'Problem statement'},{k:'bullets',l:'Problems',t:'ta',p:'One per line',tip:'כל שורה = כרטיס'},{k:'narration',l:'Narration',t:'ta',p:'Voiceover'},{k:'duration',l:'Sec',t:'num',v:7}],
+  solution:[{k:'headline',l:'Headline',t:'text',p:'Your solution'},{k:'description',l:'Description',t:'text',p:'One line'},{k:'highlights',l:'Highlights',t:'ta',p:'One per line'},{k:'narration',l:'Narration',t:'ta',p:'Voiceover'},{k:'duration',l:'Sec',t:'num',v:6}],
+  stats:[{k:'headline',l:'Headline',t:'text',p:'Stats title'},{k:'stats_raw',l:'Stats',t:'ta',p:'99% | Uptime',tip:'value | label לכל שורה'},{k:'narration',l:'Narration',t:'ta',p:'Voiceover'},{k:'duration',l:'Sec',t:'num',v:7}],
+  cta:[{k:'headline',l:'Headline',t:'text',p:'Call to action'},{k:'tagline',l:'Tagline',t:'text',p:'Supporting text'},{k:'url',l:'URL',t:'text',p:'yoursite.com'},{k:'narration',l:'Narration',t:'ta',p:'Voiceover'},{k:'duration',l:'Sec',t:'num',v:5}],
+  spotlight:[{k:'icon',l:'Icon',t:'text',p:'🎨',v:'🎨'},{k:'feature',l:'Feature',t:'text',p:'Feature name'},{k:'tagline',l:'Tagline',t:'text',p:'One line'},{k:'bullets',l:'Points',t:'ta',p:'One per line'},{k:'narration',l:'Narration',t:'ta',p:'Voiceover'},{k:'duration',l:'Sec',t:'num',v:15}],
+  comparison:[{k:'headline',l:'Headline',t:'text',p:'How we compare'},{k:'rows_raw',l:'Rows',t:'ta',p:'Feature | Ours | Others',tip:'Yes/No לאייקונים'},{k:'narration',l:'Narration',t:'ta',p:'Voiceover'},{k:'duration',l:'Sec',t:'num',v:12}],
+  testimonial:[{k:'quote',l:'Quote',t:'ta',p:'Customer quote'},{k:'author',l:'Author',t:'text',p:'Name'},{k:'role',l:'Role',t:'text',p:'CTO'},{k:'company',l:'Company',t:'text',p:'Acme Corp'},{k:'rating',l:'Stars',t:'num',v:5},{k:'duration',l:'Sec',t:'num',v:10}],
+  demo:[{k:'videoFile',l:'Video',t:'upload-video'},{k:'label',l:'Title',t:'text',p:'Optional title'},{k:'demoType',l:'Type',t:'text',p:'browser / terminal / raw',v:'browser'},{k:'caption',l:'Caption',t:'text',p:'Description below'},{k:'narration',l:'Narration',t:'ta',p:'Voiceover'},{k:'duration',l:'Sec',t:'num',v:10}],
+  image:[{k:'imageSrc',l:'Image',t:'upload-image'},{k:'headline',l:'Headline',t:'text',p:'Optional title'},{k:'caption',l:'Caption',t:'text',p:'Optional caption'},{k:'layout',l:'Layout',t:'text',p:'fullscreen / contain / split',v:'fullscreen'},{k:'kenBurns',l:'Ken Burns',t:'select',opts:['zoom-in','zoom-out','pan-left','pan-right','pan-up','pan-down','none'],v:'zoom-in',tip:'תנועת מצלמה איטית'},{k:'narration',l:'Narration',t:'ta',p:'Voiceover'},{k:'duration',l:'Sec',t:'num',v:6}],
 };
+const SCENE_TYPES=['title','problem','solution','stats','cta','spotlight','comparison','testimonial','demo','image'];
+const TYPE_LABEL={demo:'Video'};
+const TRANSITIONS=['fade','slide','wipe','flip','clock-wipe','checkerboard','zoom-blur','glitch','rgb-split','light-leak','pixelate','none'];
+const TXN_LABEL={'fade':'Fade','slide':'Slide','wipe':'Wipe','flip':'Flip','clock-wipe':'Clock','checkerboard':'Checker','zoom-blur':'Zoom','glitch':'Glitch','rgb-split':'RGB','light-leak':'Leak','pixelate':'Pixel','none':'Cut'};
+const SCENE_GRADES=['none','cinematic','vibrant','teal-orange','bleach-bypass','technicolor','infrared','matrix','warm','cold','dreamy','vintage','sepia','polaroid','noir'];
+const SCENE_FX=[['glow','Glow'],['bloom','Bloom'],['lightLeaks','Light Leaks'],['lightRays','Light Rays'],['bokeh','Bokeh'],['vhs','VHS'],['scanlines','Scanlines'],['dust','Dust']];
+function globalTransition(){return document.getElementById('transition').value||'fade';}
 
-function addScene(type, data={}) { scenes.push({type, data}); renderScenes(); }
-function removeScene(i) { scenes.splice(i,1); renderScenes(); }
+// ============== Presets (ready-made examples) ==============
+const PRESETS=[
+ {key:'product',label:'🚀 הדגמת מוצר',apply(){
+   scenes=[
+     {type:'title',data:{headline:'הכירו את המוצר שלנו',subheadline:'הפתרון שחיכיתם לו',narration:'הכירו את המוצר החדש שישנה לכם את הדרך.',duration:5}},
+     {type:'problem',data:{headline:'מכירים את התסכול?',bullets:'תהליך איטי וידני\nיותר מדי כלים נפרדים\nאין תמונה אחת ברורה',narration:'היום העבודה מפוזרת ומבזבזת זמן יקר.',duration:6}},
+     {type:'solution',data:{headline:'הפתרון שלנו',highlights:'הכל במקום אחד\nאוטומציה חכמה\nתוצאות במהירות',narration:'הפלטפורמה שלנו מאחדת הכל לחוויה פשוטה.',duration:6}},
+     {type:'stats',data:{headline:'המספרים מדברים',stats_raw:'10x | מהירות\n98% | שביעות רצון\n24/7 | זמינות',narration:'אלפי לקוחות כבר נהנים מהתוצאות.',duration:6}},
+     {type:'cta',data:{headline:'בואו נתחיל',url:'studioeylon.com',narration:'הצטרפו אלינו עוד היום.',duration:5}},
+   ];
+   setVal('videoType','product-demo');setVal('background','dark');setVal('transition','fade');setVal('colorGrade','cinematic');setVal('textDirection','rtl');
+ }},
+ {key:'promo',label:'✨ פרומו קצר',apply(){
+   scenes=[
+     {type:'title',data:{headline:'משהו חדש מגיע',subheadline:'',narration:'משהו חדש בדרך אליכם.',duration:4}},
+     {type:'spotlight',data:{icon:'⚡',feature:'מהיר. חכם. שלכם.',tagline:'חוויה שלא הכרתם',bullets:'עיצוב מרהיב\nביצועים מטורפים',narration:'תכירו חוויה חדשה לגמרי.',duration:8}},
+     {type:'cta',data:{headline:'אל תפספסו',url:'studioeylon.com',narration:'זה הרגע להצטרף.',duration:4}},
+   ];
+   setVal('videoType','spotlight');setVal('background','tech');setVal('transition','glitch');setVal('colorGrade','vibrant');setVal('textDirection','rtl');
+ }},
+ {key:'explainer',label:'🎓 הסבר / שיעור',apply(){
+   scenes=[
+     {type:'title',data:{headline:'נושא השיעור',subheadline:'מבוא קצר',narration:'היום נלמד נושא חשוב צעד אחר צעד.',duration:5}},
+     {type:'problem',data:{headline:'מה האתגר?',bullets:'נקודה ראשונה\nנקודה שנייה',narration:'נתחיל מהבנת האתגר.',duration:6}},
+     {type:'solution',data:{headline:'איך פותרים',highlights:'שלב 1\nשלב 2\nשלב 3',narration:'וכך פותרים אותו בקלות.',duration:7}},
+     {type:'cta',data:{headline:'לסיכום',url:'',narration:'זה כל מה שצריך לדעת. תודה שצפיתם.',duration:5}},
+   ];
+   setVal('videoType','webinar');setVal('background','subtle');setVal('transition','slide');setVal('colorGrade','none');setVal('textDirection','rtl');
+ }},
+ {key:'testimonial',label:'💬 המלצת לקוח',apply(){
+   scenes=[
+     {type:'title',data:{headline:'מה הלקוחות אומרים',subheadline:'',narration:'הקשיבו ללקוחות שלנו.',duration:4}},
+     {type:'testimonial',data:{quote:'זה פשוט שינה לנו את העבודה. ממליצה בחום!',author:'דנה כהן',role:'מנכ"לית',company:'Acme',rating:5,duration:8}},
+     {type:'cta',data:{headline:'הצטרפו אליהם',url:'studioeylon.com',narration:'גם אתם יכולים.',duration:4}},
+   ];
+   setVal('videoType','testimonial');setVal('background','warm');setVal('transition','fade');setVal('colorGrade','warm');setVal('textDirection','rtl');
+ }},
+];
+function renderPresetChips(){const c=document.getElementById('presetChips');if(!c)return;c.innerHTML='';PRESETS.forEach(p=>{const b=document.createElement('button');b.className='type-chip';b.title='טען תבנית לדוגמה: '+p.label;b.textContent=p.label;b.onclick=()=>applyPreset(p.key);c.appendChild(b);});}
 
-function renderScenes() {
-  const c = document.getElementById('scenesContainer'); c.innerHTML = '';
-  scenes.forEach((s, idx) => {
-    const fields = SF[s.type] || [];
-    const displayType = s.type === 'demo' ? 'video' : s.type;
-    const card = document.createElement('div'); card.className = 'scene-card';
-    card.draggable = true;
-    card.dataset.idx = idx;
-    card.innerHTML = `<div class="scene-header"><span class="scene-type">${idx+1}. ${displayType}</span><button class="remove-btn" onclick="removeScene(${idx})">&times;</button></div>` +
-      fields.map(f => {
-        const val = s.data[f.k] ?? f.v ?? '';
-        const tipH = f.tip ? `<span class="tip" data-tip="${f.tip}">?</span> ` : '';
-        if (f.t === 'upload-image' || f.t === 'upload-video') {
-          const isImg = f.t === 'upload-image';
-          const fileName = val ? val.split('/').pop() : '';
-          const preview = val && isImg ? `<img class="uploaded-thumb" src="${val}" />` : '';
-          const label = fileName ? `${preview}<span class="upload-name">${fileName}</span>` : (isImg ? 'Click to add image' : 'Click to add video');
-          return `<div class="field"><label>${f.l}</label><div class="scene-upload-zone" data-s="${idx}" data-k="${f.k}" data-accept="${isImg?'image/*':'video/*'}">${label}</div></div>`;
-        }
-        if (f.t === 'ta') return `<div class="field"><label>${tipH}${f.l}</label><textarea data-s="${idx}" data-k="${f.k}" placeholder="${f.p||''}" rows="2">${val}</textarea></div>`;
-        if (f.t === 'num') return `<div class="field"><label>${tipH}${f.l}</label><input type="number" data-s="${idx}" data-k="${f.k}" value="${val}" min="1" max="60"/></div>`;
-        return `<div class="field"><label>${tipH}${f.l}</label><input type="text" data-s="${idx}" data-k="${f.k}" value="${val}" placeholder="${f.p||''}"/></div>`;
-      }).join('');
+// ============== SFX preview palette ==============
+let sfxData=null;
+async function loadSfx(){if(sfxData)return sfxData;const r=await(await fetch(API+'/api/sfx')).json();if(r.error){toast(r.error,'err');return null;}sfxData=r.sfx;return sfxData;}
+async function renderSfxPalette(){
+  const c=document.getElementById('sfxPalette');if(!c)return;
+  c.innerHTML='<span style="font-size:12px;color:var(--text-muted)">טוען...</span>';
+  const list=await loadSfx();
+  c.innerHTML='';
+  if(!list){c.innerHTML='<span style="font-size:12px;color:var(--text-muted)">לא ניתן לטעון אפקטים</span>';return;}
+  list.forEach(s=>{const b=document.createElement('button');b.className='type-chip';b.title='נגן את האפקט '+s.label;b.innerHTML='▶ '+s.label;b.onclick=()=>playSfx(s.url);c.appendChild(b);});
+}
+function playSfx(url){const a=document.getElementById('sfxAudio');a.src=url;a.play().catch(()=>toast('לחץ שוב כדי לנגן','err'));}
+
+// ============== Motion Graphics ==============
+const MOTION_PRESETS=[
+  {key:'comment-explosion',label:'💬 פיצוץ תגובות',scene:'comment-explosion',bg:'tech',grade:'none',duration:8},
+  {key:'fade-up',label:'⬆️ Fade Up',motion:'fade-up',bg:'dark',grade:'none'},
+  {key:'pop',label:'💥 Pop',motion:'pop',bg:'dark',grade:'vibrant'},
+  {key:'kinetic',label:'🔤 Kinetic',motion:'kinetic',bg:'dark',grade:'none'},
+  {key:'slide',label:'➡️ Slide',motion:'slide-left',bg:'subtle',grade:'none'},
+  {key:'wave',label:'🌊 Wave',motion:'wave',bg:'tech',grade:'none'},
+  {key:'typewriter',label:'⌨️ Typewriter',motion:'typewriter',bg:'dark',grade:'none'},
+  {key:'blur',label:'🌫️ Blur In',motion:'blur-in',bg:'dark',grade:'cinematic'},
+  {key:'flip',label:'🔃 3D Flip',motion:'flip-in',bg:'dark',grade:'none'},
+  {key:'rotate',label:'🔄 Rotate 3D',motion:'rotate-3d',bg:'tech',grade:'none'},
+  {key:'bounce',label:'🏀 Bounce',motion:'bounce',bg:'warm',grade:'none'},
+  {key:'zoom',label:'🔍 Zoom Out',motion:'zoom-out',bg:'dark',grade:'none'},
+  {key:'drop',label:'🪂 Drop In',motion:'drop-in',bg:'dark',grade:'none'},
+  {key:'neon',label:'💡 Neon Glow',motion:'neon',bg:'dark',grade:'none',glow:true,accent:'#22d3ee'},
+  {key:'gradient',label:'🌈 Gradient',motion:'gradient',bg:'dark',grade:'none',accent:'#a855f7'},
+  {key:'shimmer',label:'✨ Shimmer',motion:'shimmer',bg:'dark',grade:'none',accent:'#f59e0b'},
+  {key:'glitch',label:'📺 Glitch',motion:'glitch',bg:'dark',grade:'none',effects:{scanlines:true}},
+];
+let motionPreset='fade-up';
+function renderMotionPresets(){
+  const c=document.getElementById('motionPresets');if(!c)return;c.innerHTML='';
+  MOTION_PRESETS.forEach(p=>{const b=document.createElement('button');b.className='type-chip'+(p.key===motionPreset?' on':'');b.dataset.key=p.key;b.title='סגנון תנועה: '+p.label;b.textContent=p.label;
+    b.onclick=()=>{motionPreset=p.key;document.getElementById('motionBg').value=p.bg;if(p.accent)document.getElementById('motionAccent').value=p.accent;if(p.duration)document.getElementById('motionDuration').value=p.duration;c.querySelectorAll('.type-chip').forEach(x=>x.classList.toggle('on',x.dataset.key===p.key));
+      document.getElementById('motionHint').textContent=p.scene==='comment-explosion'?'טיפ: לתגובות מותאמות — כתוב תגובה אחת בכל שורה בתיבת הפרומפט. אחרת ישתמש בברירת מחדל.':'הטקסט בתיבת הפרומפט יונפש על המסך.';};
+    c.appendChild(b);});
+}
+function improveMotionPrompt(){
+  const ta=document.getElementById('motionPrompt');let t=(ta.value||'').trim().replace(/\s+/g,' ');
+  if(!t){toast('כתוב קודם טקסט','err');return;}
+  const wordCount=t.split(' ').length;
+  // Non-destructive: keep ALL content. Split into lines at sentence boundaries,
+  // then commas; wrap long lines to ~8 words. Nothing is dropped.
+  let parts=t.split(/(?<=[.!?])\s+/).map(s=>s.trim()).filter(Boolean);
+  if(parts.length<=1)parts=t.split(/[,،؛;:]+/).map(s=>s.trim()).filter(Boolean);
+  if(parts.length<=1){const w=t.split(' ');const per=w.length<=4?w.length:Math.ceil(w.length/2);parts=[];for(let i=0;i<w.length;i+=per)parts.push(w.slice(i,i+per).join(' '));}
+  parts=parts.flatMap(p=>{const w=p.split(' ');const o=[];for(let i=0;i<w.length;i+=8)o.push(w.slice(i,i+8).join(' '));return o;});
+  ta.value=parts.join('\n');
+  if(wordCount>25)toast('זה בריף ארוך — לטקסט קינטי עדיף משפט קצר. לאנימציה כמו "פיצוץ תגובות" בחר את הפריסט המתאים','ok');
+  else toast('סודר לשורות','ok');
+}
+function buildMotionConfig(){
+  const res=document.getElementById('motionRes').value.split('x');
+  const accent=document.getElementById('motionAccent').value;
+  const preset=MOTION_PRESETS.find(x=>x.key===motionPreset)||MOTION_PRESETS[0];
+  const bg=document.getElementById('motionBg').value;
+  const dur=Math.max(2,+document.getElementById('motionDuration').value||5);
+  const textColor=(bg==='dark'||bg==='tech')?'#ffffff':'#0f172a';
+  let scene,dir='ltr';
+  if(preset.scene==='comment-explosion'){
+    const lines=(document.getElementById('motionPrompt').value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+    const short=lines.filter(l=>l.split(' ').length<=12&&l.length<=90);
+    scene={type:'comment-explosion',accent:accent,duration:dur};
+    if(short.length>=3)scene.comments=short;
+  }else{
+    const text=(document.getElementById('motionPrompt').value||'').trim()||'הטקסט שלך כאן';
+    dir=/[֐-׿؀-ۿ]/.test(text)?'rtl':'ltr';
+    scene={type:'motion',text:text,motion:preset.motion,accent:accent,textColor:textColor,fontSize:96,duration:dur};
+  }
+  return {
+    _projectName:'motion-'+Date.now().toString(36),
+    type:'product-demo',brand:document.getElementById('brand').value,
+    product:{name:'Motion'},
+    scenes:[scene],
+    visual:{background:document.getElementById('motionBg').value,transition:{type:'fade',durationFrames:15},animationSpeed:'normal',direction:dir,accentColor:accent},
+    audio:{voiceover:{enabled:false},music:{enabled:false,volume:0.1},sfx:{enabled:false}},
+    overlays:{vignette:false,filmGrain:false,logoWatermark:{enabled:false},colorGrade:{preset:preset.grade||'none'},captions:{enabled:false},
+      effects:Object.assign({intensity:1,glow:!!preset.glow,bloom:false,scanlines:false,lightLeaks:false,lightRays:false,bokeh:false,vhs:false,dust:false},preset.effects||{},{colorWash:{enabled:false,color:'#ff7a18',opacity:0.25,blend:'soft-light'},letterbox:{enabled:false,ratio:'2.39'}})},
+    output:{width:parseInt(res[0]),height:parseInt(res[1]),fps:30},
+    _uploads:{logo:null,images:[],videos:[]},
+  };
+}
+async function generateMotion(){
+  const btn=document.getElementById('motionCreateBtn'),st=document.getElementById('motionStatus');
+  btn.disabled=true;st.textContent='שולח...';
+  try{
+    const r=await(await fetch(API+'/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(buildMotionConfig())})).json();
+    if(!r.jobId){st.textContent='שגיאה';btn.disabled=false;return;}
+    const timer=setInterval(async()=>{
+      try{
+        const s=await(await fetch(API+'/api/status/'+r.jobId)).json();
+        st.textContent=s.progress||'מעבד...';
+        if(s.status==='done'){clearInterval(timer);btn.disabled=false;st.textContent='מוכן ✓';
+          const v=document.getElementById('motionResult');v.src=s.output;v.load();
+          document.getElementById('motionDownload').href=s.output;
+          document.getElementById('motionResultCard').style.display='block';
+          document.getElementById('motionResultCard').scrollIntoView({behavior:'smooth'});
+          loadGallery();
+        }else if(s.status==='error'){clearInterval(timer);btn.disabled=false;st.textContent='שגיאה: '+(s.error||'').slice(0,120);}
+      }catch(e){}
+    },2000);
+  }catch(e){st.textContent='שגיאה: '+e.message;btn.disabled=false;}
+}
+function applyPreset(key){const p=PRESETS.find(x=>x.key===key);if(!p)return;p.apply();selectedSceneIdx=0;syncControls();renderScenes();applyTips();toast('נטענה תבנית: '+p.label,'ok');showTabByName('scenes');}
+
+// ============== Tooltips — explain what each control does ==============
+const TIPS={
+  projectName:'שם הפרויקט — לפיו נשמרת התיקייה והקובץ',
+  brand:'פרופיל מותג — צבעים, פונטים ולוגו',
+  productName:'שם המוצר — מופיע בכותרות ובסימן המים',
+  videoType:'סוג הסרטון — קובע מבנה ברירת מחדל לסצנות',
+  productTagline:'סלוגן — שורת משנה מתחת לשם המוצר',
+  productWebsite:'כתובת אתר — מוצגת בסצנת הסיום (CTA)',
+  transition:'מעבר ברירת המחדל בין כל הסצנות',
+  resolution:'רזולוציה ויחס — אופקי / אנכי / ריבוע',
+  textDirection:'כיוון טקסט — עברית (RTL) או אנגלית (LTR)',
+  colorGrade:'צביעה קולנועית על כל הפריים',
+  fxIntensity:'עוצמת כלל האפקטים — 0 כבוי, 1.5 חזק מאוד',
+  capColor:'צבע טקסט הכתוביות',
+  capSize:'גודל הפונט של הכתוביות',
+  titleColor:'צבע הכותרות בכל הסצנות (כשמופעל)',
+  accentColor:'צבע ההדגשה/אקסנט בסצנות (כשמופעל)',
+  fxWashColor:'גוון שכבת הצבע (Color Wash)',
+  fxLetterboxRatio:'יחס הפסים השחורים הקולנועיים',
+  voice:'בחירת קול הקריינות — לחץ ▶ לשמיעת דוגמה',
+  voiceRate:'מהירות הדיבור של הקריינות',
+  musicVolume:'עוצמת מוזיקת הרקע מתחת לקריינות',
+};
+const TOGGLE_TIPS={
+  voiceoverEnabled:'יוצר קריינות AI מהטקסט (Narration) של כל סצנה',
+  musicEnabled:'מוסיף פסקול רקע אמביינטי מתחת לקריינות',
+  sfxEnabled:'מוסיף אפקטי קול (וווש/קליק/בום) במעברים בין סצנות',
+  vignetteEnabled:'מחשיך בעדינות את פינות הפריים — מראה קולנועי',
+  grainEnabled:'מרקם גרעיני דק כמו סרט צילום',
+  watermarkEnabled:'מציג את שם/לוגו המותג בפינה לאורך הסרטון',
+  captionsEnabled:'מציג את הקריינות ככתוביות על הוידאו',
+  capBackground:'פס כהה מאחורי הכתוביות לשיפור קריאות',
+  titleColorOn:'החלפת צבע הכותרות בכל הסצנות',
+  accentColorOn:'החלפת צבע ההדגשה בכל הסצנות',
+  fxGlow:'זוהר רך סביב אזורים בהירים',
+  fxBloom:'פריחת אור — הילה בוהקת על האור',
+  fxScanlines:'קווי סריקה אופקיים — מראה מסך CRT ישן',
+  fxLightLeaks:'דליפות אור צבעוניות נעות על הפריים',
+  fxLightRays:'קרני אור אלכסוניות מהפינה',
+  fxBokeh:'עיגולי אור מטושטשים מרחפים',
+  fxVhs:'עיוות וידאו ישן בסגנון VHS',
+  fxDust:'חלקיקי אבק ושריטות סרט',
+  fxColorWash:'שכבת צבע אחידה מעל הפריים',
+  fxLetterbox:'פסים שחורים למעלה ולמטה — יחס קולנועי',
+};
+const SETVAL_TIPS={
+  'background:dark':'רקע כהה אחיד ונקי','background:tech':'גרדיאנט טכנולוגי כחול-טורקיז','background:warm':'גרדיאנט חם כתום-חום','background:subtle':'גרדיאנט כהה ועדין',
+  'background:light':'רקע לבן בהיר — טקסט כהה אוטומטי','background:paper':'רקע נייר קרם בהיר — טקסט כהה','background:sky':'רקע שמיים תכלת בהיר — טקסט כהה',
+  'animSpeed:slow':'תנועת אנימציה איטית ורגועה','animSpeed:normal':'מהירות אנימציה מאוזנת','animSpeed:fast':'תנועה מהירה ואנרגטית',
+  'capPosition:bottom':'כתוביות בתחתית המסך','capPosition:top':'כתוביות בראש המסך',
+};
+const FX_DESC={glow:'זוהר רך סביב אזורים בהירים',bloom:'פריחת אור — הילה בוהקת',lightLeaks:'דליפות אור צבעוניות נעות',lightRays:'קרני אור אלכסוניות מהפינה',bokeh:'עיגולי אור מטושטשים מרחפים',vhs:'עיוות וידאו ישן בסגנון VHS',scanlines:'קווי סריקה — מראה מסך CRT',dust:'חלקיקי אבק ושריטות סרט'};
+function applyTips(){
+  for(const id in TIPS){const e=document.getElementById(id);if(e)e.title=TIPS[id];}
+  document.querySelectorAll('[data-toggle]').forEach(el=>{const t=TOGGLE_TIPS[el.dataset.toggle];if(t)el.title=t;});
+  document.querySelectorAll('[data-set] [data-value]').forEach(b=>{const g=b.closest('[data-set]');if(!g)return;const k=g.dataset.set+':'+b.dataset.value;if(SETVAL_TIPS[k])b.title=SETVAL_TIPS[k];});
+}
+const TYPE_GRAD={
+  title:'radial-gradient(120% 120% at 85% 10%,#6366F1,#111634)',
+  problem:'radial-gradient(120% 120% at 85% 10%,#B45309,#1A1410)',
+  solution:'radial-gradient(120% 120% at 85% 10%,#0E7490,#07141A)',
+  stats:'radial-gradient(120% 120% at 85% 10%,#0D9488,#06201C)',
+  cta:'radial-gradient(120% 120% at 85% 10%,#4F46E5,#0B1020)',
+  spotlight:'radial-gradient(120% 120% at 85% 10%,#7C3AED,#150B2E)',
+  comparison:'radial-gradient(120% 120% at 85% 10%,#0891B2,#06141A)',
+  testimonial:'radial-gradient(120% 120% at 85% 10%,#DB2777,#2A0A1A)',
+  demo:'radial-gradient(120% 120% at 85% 10%,#475569,#0B1020)',
+  image:'radial-gradient(120% 120% at 85% 10%,#1E293B,#0B1020)',
+};
+function defDuration(type){const f=(SF[type]||[]).find(x=>x.k==='duration');return f?f.v:6;}
+function sceneTitle(s){const d=s.data||{};return d.headline||d.feature||d.quote||d.label||d.author||(s.type.charAt(0).toUpperCase()+s.type.slice(1));}
+function typeLabel(t){return TYPE_LABEL[t]||(t.charAt(0).toUpperCase()+t.slice(1));}
+
+function addScene(type,data={}){scenes.push({type,data});selectedSceneIdx=scenes.length-1;renderScenes();}
+function removeScene(i){scenes.splice(i,1);if(selectedSceneIdx>=scenes.length)selectedSceneIdx=Math.max(0,scenes.length-1);renderScenes();}
+function dupScene(i){const c=JSON.parse(JSON.stringify(scenes[i]));scenes.splice(i+1,0,c);selectedSceneIdx=i+1;renderScenes();}
+function selectScene(i){selectedSceneIdx=i;renderScenes();seekToScene(i);}
+
+// ============== Render: filmstrip + transport + preview + inspector ==============
+function renderScenes(){
+  const total=scenes.reduce((a,s)=>a+(+s.data.duration||defDuration(s.type)),0);
+  document.getElementById('sceneCountTxt').textContent=scenes.length+' סצנות';
+  document.getElementById('scenesEyebrow').textContent='סצנות · '+scenes.length+' · '+fmt(total);
+  document.getElementById('totalTime').textContent=fmt(total);
+
+  // filmstrip
+  const c=document.getElementById('scenesContainer');c.innerHTML='';
+  scenes.forEach((s,idx)=>{
+    const card=document.createElement('div');
+    card.className='scene-card'+(idx===selectedSceneIdx?' sel':'');
+    card.draggable=true;card.dataset.idx=idx;
+    const dur=(+s.data.duration||defDuration(s.type));
+    card.title='לחץ לעריכת הסצנה';
+    card.innerHTML='<div class="thumb" style="background:'+TYPE_GRAD[s.type]+'"><span class="tnum">'+(idx+1)+'</span><span class="ttype">'+typeLabel(s.type)+'</span><button class="card-del" title="מחק סצנה">×</button><h4>'+esc(sceneTitle(s))+'</h4></div>'+
+      '<div class="scene-meta"><span class="dur mono" title="משך הסצנה בשניות">'+dur+'s</span><span class="hgrip" title="גרור כדי לשנות סדר">⠿</span></div>';
+    card.querySelector('.card-del').onclick=e=>{e.stopPropagation();if(confirm('למחוק את סצנה '+(idx+1)+'?'))removeScene(idx);};
+    card.addEventListener('click',()=>selectScene(idx));
     c.appendChild(card);
+    // transition connector between this card and the next
+    if(idx<scenes.length-1){
+      const conn=document.createElement('div');conn.className='connector';
+      const cur=(s.transition&&s.transition.type)||globalTransition();
+      const sel=document.createElement('select');sel.className='conn-sel';sel.title='בחר את המעבר בין הסצנות';
+      sel.innerHTML=TRANSITIONS.map(t=>'<option value="'+t+'"'+(t===cur?' selected':'')+'>'+(TXN_LABEL[t]||t)+'</option>').join('');
+      sel.onchange=()=>{scenes[idx].transition={type:sel.value,durationFrames:15};pushPreview();};
+      sel.onclick=e=>e.stopPropagation();
+      conn.innerHTML='<span class="conn-line"></span>';
+      conn.appendChild(sel);
+      const cap=document.createElement('span');cap.className='conn-cap';cap.textContent='מעבר';conn.appendChild(cap);
+      c.appendChild(conn);
+    }
   });
-  c.querySelectorAll('input,textarea,select').forEach(el => {
-    const evt = el.tagName === 'SELECT' ? 'change' : 'input';
-    el.addEventListener(evt, e => { scenes[+e.target.dataset.s].data[e.target.dataset.k] = e.target.type==='number' ? +e.target.value : e.target.value; });
-  });
-  // Scene-level upload zones
-  c.querySelectorAll('.scene-upload-zone').forEach(zone => {
-    zone.onclick = () => {
-      const accept = zone.dataset.accept;
-      const isImg = accept.startsWith('image');
-      const input = document.getElementById(isImg ? 'sceneImageFile' : 'sceneVideoFile');
-      input.onchange = async () => {
-        const file = input.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async () => {
-          const base64 = reader.result.split(',')[1];
-          try {
-            const resp = await fetch(`${API}/api/upload-base64`, {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name: file.name, data: base64, mime: file.type }),
-            });
-            const data = await resp.json();
-            const sIdx = +zone.dataset.s;
-            const key = zone.dataset.k;
-            scenes[sIdx].data[key] = data.path;
-            if (isImg) uploadedFiles.images.push(data.path);
-            else uploadedFiles.videos.push(data.path);
-            renderScenes();
-          } catch (err) { console.error('Upload failed:', err); }
-        };
-        reader.readAsDataURL(file);
-        input.value = '';
-      };
-      input.click();
-    };
-  });
+  const add=document.createElement('div');add.className='add-tile';add.title='הוסף סצנת כותרת חדשה';add.innerHTML='<span class="plus">+</span>הוסף סצנה';
+  add.onclick=()=>addScene('title',{headline:'כותרת חדשה',duration:5});
+  c.appendChild(add);
+  wireDragDrop(c);
 
-  // Drag & drop reorder
-  let dragIdx = null;
-  c.querySelectorAll('.scene-card').forEach(card => {
-    card.addEventListener('dragstart', e => {
-      // Don't drag when interacting with form fields
-      if (['INPUT','TEXTAREA','SELECT','BUTTON'].includes(e.target.tagName)) { e.preventDefault(); return; }
-      dragIdx = +card.dataset.idx;
-      card.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    card.addEventListener('dragend', () => {
-      card.classList.remove('dragging');
-      c.querySelectorAll('.scene-card').forEach(c => c.classList.remove('drag-over'));
-      dragIdx = null;
-    });
-    card.addEventListener('dragover', e => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      card.classList.add('drag-over');
-    });
-    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
-    card.addEventListener('drop', e => {
-      e.preventDefault();
-      const dropIdx = +card.dataset.idx;
-      if (dragIdx !== null && dragIdx !== dropIdx) {
-        const moved = scenes.splice(dragIdx, 1)[0];
-        scenes.splice(dropIdx, 0, moved);
-        renderScenes();
+  // add chips
+  const chips=document.getElementById('addChips');chips.innerHTML='';
+  SCENE_TYPES.forEach(t=>{const b=document.createElement('button');b.className='type-chip';b.title='הוסף סצנת '+typeLabel(t);b.innerHTML=typeLabel(t)+' <span class="pl">+</span>';b.onclick=()=>addScene(t,{});chips.appendChild(b);});
+
+  pushPreview();
+  renderInspector();
+}
+function fmt(s){s=Math.round(s);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+// Live preview via the embedded Remotion Player
+let previewTimer=null;
+function pushPreview(){
+  if(!window.StudioPreview)return;
+  clearTimeout(previewTimer);
+  previewTimer=setTimeout(()=>{try{window.StudioPreview.update(buildConfig());}catch(e){}},250);
+}
+function seekToScene(i){
+  if(!window.StudioPreview)return;
+  const fps=window.StudioPreview.fps||30;let f=0;
+  for(let j=0;j<i;j++)f+=(+scenes[j].data.duration||defDuration(scenes[j].type))*fps;
+  setTimeout(()=>window.StudioPreview.seekToFrame(Math.round(f)),350);
+}
+
+function renderInspector(){
+  const insp=document.getElementById('inspector');
+  const s=scenes[selectedSceneIdx];
+  if(!s){insp.innerHTML='<div class="eyebrow">אין סצנות</div>';return;}
+  const fields=SF[s.type]||[];
+  let html='<div class="insp-head"><span class="insp-tag">Scene '+(selectedSceneIdx+1)+'</span><h3>'+typeLabel(s.type)+'</h3></div><div class="insp-grid">';
+  fields.forEach(f=>{
+    const val=s.data[f.k]??f.v??'';
+    const tip=f.tip?'<span class="q" title="'+esc(f.tip)+'">?</span>':'';
+    if(f.t==='upload-image'||f.t==='upload-video'){
+      const isImg=f.t==='upload-image';const fn=val?String(val).split('/').pop():'';
+      const prev=resolveAssetPreview(val);
+      const inner=val?((isImg&&prev?'<img src="'+prev+'">':'')+'<span>'+esc(fn)+'</span>'):(isImg?'גרור/לחץ להוספת תמונה':'גרור/לחץ להוספת וידאו');
+      html+='<div class="field"><label class="lbl">'+f.l+'</label><div class="dropzone" data-s="'+selectedSceneIdx+'" data-k="'+f.k+'" data-accept="'+(isImg?'image/*':'video/*')+'">'+inner+'</div></div>';
+    }else if(f.t==='ta'){
+      html+='<div class="field"><label class="lbl">'+tip+f.l+'</label><textarea class="ta" data-s="'+selectedSceneIdx+'" data-k="'+f.k+'" placeholder="'+(f.p||'')+'">'+esc(val)+'</textarea></div>';
+    }else if(f.t==='num'){
+      html+='<div class="field"><label class="lbl">'+f.l+'</label><input class="inp mono" type="number" min="1" max="60" data-s="'+selectedSceneIdx+'" data-k="'+f.k+'" value="'+esc(val)+'"></div>';
+    }else if(f.t==='select'){
+      html+='<div class="field"><label class="lbl">'+tip+f.l+'</label><select class="sel" data-s="'+selectedSceneIdx+'" data-k="'+f.k+'">'+(f.opts||[]).map(o=>'<option value="'+o+'"'+(val===o?' selected':'')+'>'+o+'</option>').join('')+'</select></div>';
+    }else{
+      html+='<div class="field"><label class="lbl">'+tip+f.l+'</label><input class="inp" data-s="'+selectedSceneIdx+'" data-k="'+f.k+'" value="'+esc(val)+'" placeholder="'+(f.p||'')+'"></div>';
+    }
+  });
+  // per-scene transition + effects
+  const i=selectedSceneIdx;const fx=s.fx||{};
+  const tOut=(s.transition&&s.transition.type)||globalTransition();
+  let extra='<div class="insp-section">';
+  if(i<scenes.length-1){
+    extra+='<div class="sec-lbl">מעבר לסצנה הבאה</div>';
+    extra+='<select class="sel" id="inspTxn">'+TRANSITIONS.map(t=>'<option value="'+t+'"'+(t===tOut?' selected':'')+'>'+(TXN_LABEL[t]||t)+'</option>').join('')+'</select>';
+  }
+  extra+='<div class="sec-lbl" style="margin-top:6px">אפקטים לסצנה זו</div>';
+  extra+='<select class="sel" id="inspGrade"><option value="">Color grade · גלובלי</option>'+SCENE_GRADES.map(g=>'<option value="'+g+'"'+(fx.colorGrade===g?' selected':'')+'>'+g+'</option>').join('')+'</select>';
+  extra+='<div class="mini-fx">'+SCENE_FX.map(p=>'<div class="mini-chip'+(fx[p[0]]?' on':'')+'" data-fx="'+p[0]+'" title="'+esc((FX_DESC[p[0]]||p[1])+' · חל על סצנה זו בלבד')+'"><span>'+p[1]+'</span><span class="md"></span></div>').join('')+'</div>';
+  extra+='</div>';
+  html+=extra;
+  html+='<div style="display:flex;gap:8px;margin-top:4px"><button class="btn" style="flex:1;justify-content:center" title="צור עותק של הסצנה" onclick="dupScene('+selectedSceneIdx+')">שכפל</button><button class="btn btn-danger" style="justify-content:center" title="מחק את הסצנה" onclick="removeScene('+selectedSceneIdx+')">מחק</button></div></div>';
+  insp.innerHTML=html;
+  wireSceneFx(insp,i);
+
+  insp.querySelectorAll('input,textarea,select').forEach(el=>{
+    if(!el.dataset.k)return;
+    const evt=el.tagName==='SELECT'?'change':'input';
+    el.addEventListener(evt,e=>{
+      const i=+e.target.dataset.s,k=e.target.dataset.k;
+      scenes[i].data[k]=e.target.type==='number'?+e.target.value:e.target.value;
+      pushPreview();
+      if(['headline','feature','quote','label','duration','subheadline','description','icon','tagline','url'].includes(k)){
+        // refresh filmstrip title/duration lightly
+        const card=document.querySelector('.scene-card[data-idx="'+i+'"]');
+        if(card){const h=card.querySelector('h4');if(h)h.textContent=sceneTitle(scenes[i]);const du=card.querySelector('.dur');if(du)du.textContent=(+scenes[i].data.duration||defDuration(scenes[i].type))+'s';}
       }
     });
   });
-}
-
-// Default scenes
-addScene('title', { headline: 'Your Title Here', subheadline: 'Subtitle goes here', narration: 'Welcome.', duration: 5 });
-addScene('problem', { headline: 'The Problem', bullets: 'Pain point 1\nPain point 2\nPain point 3', narration: 'Here is the problem.', duration: 6 });
-addScene('solution', { headline: 'The Solution', highlights: 'Benefit 1\nBenefit 2\nBenefit 3', narration: 'Here is the solution.', duration: 6 });
-addScene('cta', { headline: 'Get Started', url: 'studioeylon.com', narration: 'Get started today.', duration: 5 });
-
-// ============================================
-// File uploads
-// ============================================
-function handleUpload(type, input) {
-  const files = Array.from(input.files);
-  if (!files.length) return;
-
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const base64 = reader.result.split(',')[1]; // strip data:...;base64,
-      try {
-        const resp = await fetch(`${API}/api/upload-base64`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: file.name, data: base64, mime: file.type }),
-        });
-        const data = await resp.json();
-        if (type === 'logo') { uploadedFiles.logo = data.path; showUploadedFile('logoPreview', data, type); }
-      } catch (err) { console.error('Upload failed:', err); }
-    };
-    reader.readAsDataURL(file);
-  });
-  input.value = '';
-}
-
-function showUploadedFile(containerId, data, type) {
-  const c = document.getElementById(containerId);
-  if (!c) return;
-  c.innerHTML = '';
-  const el = document.createElement('div'); el.className = 'uploaded-file';
-  if (data.thumbnail) el.innerHTML = `<img class="uploaded-thumb" src="${data.thumbnail}" /> `;
-  el.innerHTML += `${data.name} <span class="remove">&times;</span>`;
-  el.querySelector('.remove').onclick = () => { el.remove(); uploadedFiles.logo = null; };
-  c.appendChild(el);
-}
-
-// Drag & drop for logo
-const logoZone = document.getElementById('logoUpload');
-if (logoZone) {
-  logoZone.addEventListener('dragover', e => { e.preventDefault(); logoZone.classList.add('dragover'); });
-  logoZone.addEventListener('dragleave', () => logoZone.classList.remove('dragover'));
-  logoZone.addEventListener('drop', e => {
-    e.preventDefault(); logoZone.classList.remove('dragover');
-    document.getElementById('logoFile').files = e.dataTransfer.files;
-    handleUpload('logo', document.getElementById('logoFile'));
+  insp.querySelectorAll('.dropzone').forEach(zone=>{
+    zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('dragover');});
+    zone.addEventListener('dragleave',()=>zone.classList.remove('dragover'));
+    zone.onclick=()=>pickSceneFile(zone);
+    zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('dragover');if(e.dataTransfer.files[0])uploadSceneFile(zone,e.dataTransfer.files[0]);});
   });
 }
 
-// ============================================
-// Build config
-// ============================================
-function buildConfig() {
-  const res = document.getElementById('resolution').value.split('x');
+// Wire the per-scene transition + effects controls in the inspector
+function wireSceneFx(insp,i){
+  const txn=insp.querySelector('#inspTxn');
+  if(txn)txn.onchange=()=>{scenes[i].transition={type:txn.value,durationFrames:15};renderScenes();};
+  const grade=insp.querySelector('#inspGrade');
+  if(grade)grade.onchange=()=>{scenes[i].fx=scenes[i].fx||{};if(grade.value)scenes[i].fx.colorGrade=grade.value;else delete scenes[i].fx.colorGrade;pushPreview();};
+  insp.querySelectorAll('.mini-chip[data-fx]').forEach(chip=>{
+    chip.onclick=()=>{const k=chip.dataset.fx;scenes[i].fx=scenes[i].fx||{};scenes[i].fx[k]=!scenes[i].fx[k];chip.classList.toggle('on',scenes[i].fx[k]);pushPreview();};
+  });
+}
+function sceneHasFx(fx){if(!fx)return false;return SCENE_FX.some(p=>fx[p[0]])||!!fx.colorGrade;}
+
+function pickSceneFile(zone){
+  const isImg=zone.dataset.accept.startsWith('image');
+  const input=document.getElementById(isImg?'sceneImageFile':'sceneVideoFile');
+  input.onchange=()=>{if(input.files[0])uploadSceneFile(zone,input.files[0]);input.value='';};
+  input.click();
+}
+function uploadSceneFile(zone,file){
+  const isImg=file.type.startsWith('image');
+  const reader=new FileReader();
+  reader.onload=async()=>{
+    const base64=reader.result.split(',')[1];
+    try{
+      const r=await(await fetch(API+'/api/upload-base64',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:file.name,data:base64,mime:file.type})})).json();
+      const i=+zone.dataset.s,k=zone.dataset.k;
+      scenes[i].data[k]=r.path;
+      if(isImg)uploadedFiles.images.push(r.path);else uploadedFiles.videos.push(r.path);
+      renderInspector();
+    }catch(err){toast('שגיאת העלאה','err');}
+  };
+  reader.readAsDataURL(file);
+}
+
+function wireDragDrop(c){
+  let dragIdx=null;
+  c.querySelectorAll('.scene-card').forEach(card=>{
+    card.addEventListener('dragstart',()=>{dragIdx=+card.dataset.idx;card.classList.add('dragging');});
+    card.addEventListener('dragend',()=>{card.classList.remove('dragging');c.querySelectorAll('.scene-card').forEach(x=>x.classList.remove('drag-over'));dragIdx=null;});
+    card.addEventListener('dragover',e=>{e.preventDefault();card.classList.add('drag-over');});
+    card.addEventListener('dragleave',()=>card.classList.remove('drag-over'));
+    card.addEventListener('drop',e=>{e.preventDefault();const drop=+card.dataset.idx;if(dragIdx!==null&&dragIdx!==drop){const m=scenes.splice(dragIdx,1)[0];scenes.splice(drop,0,m);selectedSceneIdx=drop;renderScenes();}});
+  });
+}
+
+// ============== Logo upload ==============
+function handleUpload(type,input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async()=>{
+    const base64=reader.result.split(',')[1];
+    try{
+      const r=await(await fetch(API+'/api/upload-base64',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:file.name,data:base64,mime:file.type})})).json();
+      if(type==='logo'){uploadedFiles.logo=r.path;showLogo(r.path,file.name);}
+    }catch(err){toast('שגיאת העלאה','err');}
+  };
+  reader.readAsDataURL(file);input.value='';
+}
+function showLogo(path,name){
+  const c=document.getElementById('logoPreview');
+  const isUp=path&&path.startsWith('/app/uploads');
+  c.innerHTML=path?('<div class="file-pill">'+(isUp?'🖼 ':'')+esc(name||path.split('/').pop())+'</div>'):'';
+}
+const logoZone=document.getElementById('logoUpload');
+logoZone.addEventListener('dragover',e=>{e.preventDefault();logoZone.classList.add('dragover');});
+logoZone.addEventListener('dragleave',()=>logoZone.classList.remove('dragover'));
+logoZone.addEventListener('drop',e=>{e.preventDefault();logoZone.classList.remove('dragover');const f=document.getElementById('logoFile');f.files=e.dataTransfer.files;handleUpload('logo',f);});
+
+// ============== Music / background-image upload ==============
+async function uploadBase64(file){
+  const b64=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.readAsDataURL(file);});
+  return (await fetch(API+'/api/upload-base64',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:file.name,data:b64,mime:file.type})})).json();
+}
+async function handleMusicUpload(input){
+  const file=input.files[0];if(!file)return;input.value='';
+  try{const r=await uploadBase64(file);if(r.error){toast(r.error,'err');return;}
+    document.getElementById('musicCustomFile').value=r.path;
+    document.getElementById('musicEnabled').checked=true;syncControls();
+    document.getElementById('musicPreview').innerHTML='<div class="file-pill">🎵 '+esc(file.name)+' · <a href="#" onclick="clearMusic();return false">הסר</a></div><audio controls src="'+r.path+'" style="width:100%;margin-top:8px"></audio>';
+    toast('המוזיקה הועלתה','ok');
+  }catch(e){toast('שגיאת העלאה','err');}
+}
+function clearMusic(){document.getElementById('musicCustomFile').value='';document.getElementById('musicPreview').innerHTML='';}
+async function handleBgUpload(input){
+  const file=input.files[0];if(!file)return;input.value='';
+  try{const r=await uploadBase64(file);if(r.error){toast(r.error,'err');return;}
+    document.getElementById('bgImage').value=r.path;
+    document.getElementById('bgPreview').innerHTML='<div class="file-pill">🖼 '+esc(file.name)+' · <a href="#" onclick="clearBg();return false">הסר</a></div>';
+    pushPreview();toast('תמונת הרקע הועלתה','ok');
+  }catch(e){toast('שגיאת העלאה','err');}
+}
+function clearBg(){document.getElementById('bgImage').value='';document.getElementById('bgPreview').innerHTML='';pushPreview();}
+['musicUpload','bgUpload'].forEach(id=>{const z=document.getElementById(id);if(!z)return;
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('dragover');});
+  z.addEventListener('dragleave',()=>z.classList.remove('dragover'));
+  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('dragover');const file=e.dataTransfer.files[0];if(!file)return;const f=document.getElementById(id==='musicUpload'?'musicFile':'bgFile');const dt=new DataTransfer();dt.items.add(file);f.files=dt.files;(id==='musicUpload'?handleMusicUpload(f):handleBgUpload(f));});
+});
+
+// ============== Build config (UNCHANGED logic) ==============
+function buildConfig(){
+  const res=document.getElementById('resolution').value.split('x');
   return {
-    _projectName: document.getElementById('projectName').value || `video-${Date.now().toString(36)}`,
-    type: document.getElementById('videoType').value,
-    brand: document.getElementById('brand').value,
-    product: {
-      name: document.getElementById('productName').value,
-      tagline: document.getElementById('productTagline').value,
-      website: document.getElementById('productWebsite').value,
-      logo: uploadedFiles.logo || 'images/ds-logo.png',
-    },
-    scenes: scenes.map(s => {
-      const d = { ...s.data, type: s.type };
-      if (d.bullets && typeof d.bullets === 'string') d.bullets = d.bullets.split('\n').filter(Boolean);
-      if (d.highlights && typeof d.highlights === 'string') d.highlights = d.highlights.split('\n').filter(Boolean);
-      if (d.stats_raw) { d.stats = d.stats_raw.split('\n').filter(Boolean).map(l => { const [v,la] = l.split('|').map(s=>s.trim()); return {value:v||'',label:la||'',icon:''}; }); delete d.stats_raw; }
-      if (d.rows_raw) { d.rows = d.rows_raw.split('\n').filter(Boolean).map(l => { const p=l.split('|').map(s=>s.trim()); return {feature:p[0]||'',ours:p[1]==='Yes'?true:p[1]==='No'?false:p[1]||'',others:p[2]==='Yes'?true:p[2]==='No'?false:p[2]||''}; }); delete d.rows_raw; }
+    _projectName:document.getElementById('projectName').value||('video-'+Date.now().toString(36)),
+    type:document.getElementById('videoType').value,
+    brand:document.getElementById('brand').value,
+    product:{name:document.getElementById('productName').value,tagline:document.getElementById('productTagline').value,website:document.getElementById('productWebsite').value,logo:uploadedFiles.logo||'images/ds-logo.png'},
+    scenes:scenes.map((s,idx)=>{
+      const d={...s.data,type:s.type};
+      if(d.bullets&&typeof d.bullets==='string')d.bullets=d.bullets.split('\n').filter(Boolean);
+      if(d.highlights&&typeof d.highlights==='string')d.highlights=d.highlights.split('\n').filter(Boolean);
+      if(d.stats_raw){d.stats=d.stats_raw.split('\n').filter(Boolean).map(l=>{const[v,la]=l.split('|').map(x=>x.trim());return{value:v||'',label:la||'',icon:''};});delete d.stats_raw;}
+      if(d.rows_raw){d.rows=d.rows_raw.split('\n').filter(Boolean).map(l=>{const p=l.split('|').map(x=>x.trim());return{feature:p[0]||'',ours:p[1]==='Yes'?true:p[1]==='No'?false:p[1]||'',others:p[2]==='Yes'?true:p[2]==='No'?false:p[2]||''};});delete d.rows_raw;}
+      if(idx<scenes.length-1&&s.transition&&s.transition.type)d.transition={type:s.transition.type,durationFrames:s.transition.durationFrames||15};
+      if(sceneHasFx(s.fx))d.fx=s.fx;
       return d;
     }),
-    visual: {
-      background: document.getElementById('background').value,
-      transition: { type: document.getElementById('transition').value, durationFrames: 15 },
-      animationSpeed: document.getElementById('animSpeed').value,
-      direction: document.getElementById('textDirection').value,
+    visual:{background:document.getElementById('background').value,transition:{type:document.getElementById('transition').value,durationFrames:15},animationSpeed:document.getElementById('animSpeed').value,direction:document.getElementById('textDirection').value,
+      titleColor:document.getElementById('titleColorOn').checked?document.getElementById('titleColor').value:'',
+      accentColor:document.getElementById('accentColorOn').checked?document.getElementById('accentColor').value:'',
+      backgroundImage:document.getElementById('bgImage').value||''},
+    audio:{voiceover:{enabled:document.getElementById('voiceoverEnabled').checked,voice:document.getElementById('voice').value,rate:document.getElementById('voiceRate').value},music:{enabled:document.getElementById('musicEnabled').checked,volume:parseFloat(document.getElementById('musicVolume').value),customFile:document.getElementById('musicCustomFile').value||''},sfx:{enabled:document.getElementById('sfxEnabled').checked}},
+    overlays:{
+      vignette:document.getElementById('vignetteEnabled').checked,
+      filmGrain:document.getElementById('grainEnabled').checked,
+      logoWatermark:{enabled:document.getElementById('watermarkEnabled').checked,position:'bottom-right'},
+      colorGrade:{preset:document.getElementById('colorGrade').value},
+      captions:{enabled:document.getElementById('captionsEnabled').checked,position:document.getElementById('capPosition').value,color:document.getElementById('capColor').value,size:parseInt(document.getElementById('capSize').value),background:document.getElementById('capBackground').checked},
+      effects:{
+        intensity:parseFloat(document.getElementById('fxIntensity').value),
+        glow:document.getElementById('fxGlow').checked,bloom:document.getElementById('fxBloom').checked,
+        scanlines:document.getElementById('fxScanlines').checked,lightLeaks:document.getElementById('fxLightLeaks').checked,
+        lightRays:document.getElementById('fxLightRays').checked,bokeh:document.getElementById('fxBokeh').checked,
+        vhs:document.getElementById('fxVhs').checked,dust:document.getElementById('fxDust').checked,
+        colorWash:{enabled:document.getElementById('fxColorWash').checked,color:document.getElementById('fxWashColor').value,opacity:0.25,blend:'soft-light'},
+        letterbox:{enabled:document.getElementById('fxLetterbox').checked,ratio:document.getElementById('fxLetterboxRatio').value},
+      },
     },
-    audio: {
-      voiceover: { enabled: document.getElementById('voiceoverEnabled').checked, voice: document.getElementById('voice').value, rate: document.getElementById('voiceRate').value },
-      music: { enabled: document.getElementById('musicEnabled').checked, volume: parseFloat(document.getElementById('musicVolume').value) },
-      sfx: { enabled: document.getElementById('sfxEnabled').checked },
-    },
-    overlays: {
-      vignette: document.getElementById('vignetteEnabled').checked,
-      filmGrain: document.getElementById('grainEnabled').checked,
-      logoWatermark: { enabled: document.getElementById('watermarkEnabled').checked, position: 'bottom-right' },
-    },
-    output: { width: parseInt(res[0]), height: parseInt(res[1]), fps: 30 },
-    _uploads: uploadedFiles,
+    output:{width:parseInt(res[0]),height:parseInt(res[1]),fps:30},
+    _uploads:uploadedFiles,
   };
 }
 
-// ============================================
-// Generate
-// ============================================
-async function generate() {
-  const btn = document.getElementById('generateBtn');
-  btn.disabled = true;
-  document.getElementById('progressArea').style.display = 'flex';
-  document.getElementById('genSpinner').style.display = 'block';
-  document.getElementById('progressText').textContent = 'Sending...';
-
-  try {
-    const config = buildConfig();
-    const resp = await fetch(`${API}/api/generate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config) });
-    const { jobId } = await resp.json();
-    pollStatus(jobId);
-  } catch (err) {
-    document.getElementById('progressText').textContent = 'Error: ' + err.message;
-    document.getElementById('genSpinner').style.display = 'none';
-    btn.disabled = false;
-  }
+// ============== Generate ==============
+async function generate(){
+  const btn=document.getElementById('generateBtn');btn.disabled=true;
+  toast('שולח...',null,true);
+  try{
+    const r=await(await fetch(API+'/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(buildConfig())})).json();
+    pollStatus(r.jobId);
+  }catch(err){toast('שגיאה: '+err.message,'err');btn.disabled=false;}
+}
+function pollStatus(jobId){
+  const timer=setInterval(async()=>{
+    try{
+      const r=await(await fetch(API+'/api/status/'+jobId)).json();
+      toast(r.progress||'מעבד...',null,true);
+      if(r.status==='done'){clearInterval(timer);toast('הוידאו מוכן!','ok');document.getElementById('generateBtn').disabled=false;loadGallery();openPlayer(r.output);}
+      else if(r.status==='error'){clearInterval(timer);toast('שגיאה: '+(r.error||'').slice(0,140),'err');document.getElementById('generateBtn').disabled=false;}
+    }catch(e){}
+  },2000);
 }
 
-function pollStatus(jobId) {
-  const timer = setInterval(async () => {
-    try {
-      const r = await (await fetch(`${API}/api/status/${jobId}`)).json();
-      document.getElementById('progressText').textContent = r.progress;
-      if (r.status === 'done') {
-        clearInterval(timer);
-        document.getElementById('genSpinner').style.display = 'none';
-        document.getElementById('progressText').textContent = 'Done!';
-        document.getElementById('generateBtn').disabled = false;
-        loadGallery();
-        openPlayer(r.output);
-      } else if (r.status === 'error') {
-        clearInterval(timer);
-        document.getElementById('genSpinner').style.display = 'none';
-        document.getElementById('progressText').textContent = 'Error: ' + (r.error || '').slice(0, 200);
-        document.getElementById('generateBtn').disabled = false;
-      }
-    } catch {}
-  }, 2000);
-}
-
-// ============================================
-// Gallery
-// ============================================
-async function loadGallery() {
-  try {
-    const projects = await (await fetch(`${API}/api/projects`)).json();
-    const grid = document.getElementById('galleryGrid');
-    if (projects.length === 0) { grid.innerHTML = '<div class="empty-gallery"><div class="icon">🎬</div><div class="text">Your generated videos will appear here</div></div>'; return; }
-    grid.innerHTML = '';
-    projects.forEach(p => {
-      p.videos.forEach(v => {
-        const url = `/projects/${p.name}/remotion/out/${v}`;
-        const card = document.createElement('div'); card.className = 'gallery-card';
-        card.innerHTML = `<video src="${url}" preload="metadata" muted></video><div class="card-body"><div class="card-info"><div class="card-title">${p.name}</div></div><button class="delete-btn" title="Delete" data-project="${p.name}">&times;</button></div>`;
-        card.querySelector('video').onclick = () => openPlayer(url);
-        card.querySelector('.delete-btn').onclick = async (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (!confirm(`Delete "${p.name}"?`)) return;
-          try {
-            const resp = await fetch(`${API}/api/projects/${encodeURIComponent(p.name)}`, { method: 'DELETE' });
-            const result = await resp.json();
-            if (result.ok) { loadGallery(); }
-            else { alert('Delete failed: ' + (result.error || 'Unknown error')); }
-          } catch (err) { console.error('Delete error:', err); alert('Delete failed: ' + err.message); }
-        };
+// ============== Gallery ==============
+async function loadGallery(){
+  try{
+    const projects=await(await fetch(API+'/api/projects')).json();
+    const grid=document.getElementById('galleryGrid');grid.innerHTML='';projectConfigs={};
+    if(!projects.length){grid.innerHTML='<div class="empty"><div class="ic">🎬</div>הוידאו שתיצור יופיע כאן</div>';return;}
+    projects.forEach(p=>{
+      if(p.config)projectConfigs[p.name]=p.config;
+      p.videos.forEach(v=>{
+        const url='/projects/'+p.name+'/remotion/out/'+v;
+        const card=document.createElement('div');card.className='vid-card';
+        card.innerHTML='<video src="'+url+'" preload="metadata" muted></video><div class="vid-foot"><b>'+esc(p.name)+'</b><div class="tools"><button class="icon-btn" title="ערוך">&#9998;</button><button class="icon-btn studio" title="פתח ב-Studio">&#9638;</button><button class="icon-btn del" title="מחק">&times;</button></div></div>';
+        card.querySelector('video').onclick=()=>openPlayer(url);
+        const[edit,studio,del]=card.querySelectorAll('.icon-btn');
+        edit.onclick=()=>editProject(p.name);
+        studio.onclick=e=>openStudio(p.name,e.currentTarget);
+        del.onclick=async()=>{if(!confirm('למחוק את "'+p.name+'"?'))return;try{const r=await(await fetch(API+'/api/projects/'+encodeURIComponent(p.name),{method:'DELETE'})).json();if(r.ok)loadGallery();else toast('מחיקה נכשלה','err');}catch(e){toast('מחיקה נכשלה','err');}};
         grid.appendChild(card);
       });
     });
-  } catch {}
+  }catch(e){}
 }
 
-// ============================================
-// Player overlay
-// ============================================
-function openPlayer(url) {
-  const o = document.getElementById('playerOverlay');
-  const v = document.getElementById('overlayVideo');
-  v.src = url; v.play();
-  document.getElementById('overlayDownload').href = url;
-  o.classList.add('open');
+// ============== Editor: load existing project ==============
+function configSceneToForm(scene){
+  const c=scene.content||{};const data={...c};
+  if(scene.durationSeconds!=null)data.duration=scene.durationSeconds;
+  if(scene.narration!=null)data.narration=scene.narration;
+  const b=v=>v===true?'Yes':v===false?'No':(v??'');
+  if(scene.type==='problem'&&Array.isArray(c.problems)){data.bullets=c.problems.map(p=>p.text).join('\n');delete data.problems;}
+  if(Array.isArray(c.bullets))data.bullets=c.bullets.join('\n');
+  if(Array.isArray(c.highlights))data.highlights=c.highlights.join('\n');
+  if(Array.isArray(c.stats)){data.stats_raw=c.stats.map(s=>s.value+' | '+s.label).join('\n');delete data.stats;}
+  if(Array.isArray(c.rows)){data.rows_raw=c.rows.map(r=>r.feature+' | '+b(r.ours)+' | '+b(r.others)).join('\n');delete data.rows;}
+  if(scene.type==='cta'&&Array.isArray(c.links)){data.url=c.links[0]?.url||'';delete data.links;}
+  const out={type:scene.type,data};
+  if(scene.transition&&scene.transition.type)out.transition={type:scene.transition.type,durationFrames:scene.transition.durationFrames||15};
+  if(scene.fx)out.fx=scene.fx;
+  return out;
 }
-function closePlayer() {
-  document.getElementById('overlayVideo').pause();
-  document.getElementById('playerOverlay').classList.remove('open');
+function resolveAssetPreview(val){
+  if(!val)return'';
+  if(val.startsWith('/')||val.startsWith('http')||val.startsWith('data:'))return val;
+  if(editingProject&&(val.startsWith('images/')||val.startsWith('demos/')))return'/projects/'+editingProject+'/remotion/public/'+val;
+  return val;
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closePlayer(); });
+function setVal(id,v){const e=document.getElementById(id);if(e!=null&&v!=null)e.value=v;}
+function setChk(id,v){const e=document.getElementById(id);if(e!=null&&v!=null)e.checked=!!v;}
+function setFormFromConfig(cfg){
+  setVal('projectName',cfg.projectName);setVal('brand',cfg.brand);setVal('videoType',cfg.type);
+  setVal('productName',cfg.product?.name);setVal('productTagline',cfg.product?.tagline);setVal('productWebsite',cfg.product?.website);
+  uploadedFiles={logo:cfg.product?.logo||null,images:[],videos:[]};
+  if(cfg.product?.logo)showLogo(cfg.product.logo);else document.getElementById('logoPreview').innerHTML='';
+  setVal('textDirection',cfg.visual?.direction);setVal('background',cfg.visual?.background);setVal('transition',cfg.visual?.transition?.type);setVal('animSpeed',cfg.visual?.animationSpeed);
+  if(cfg.output?.width&&cfg.output?.height)setVal('resolution',cfg.output.width+'x'+cfg.output.height);
+  setChk('vignetteEnabled',cfg.overlays?.vignette?.enabled);setChk('grainEnabled',cfg.overlays?.filmGrain?.enabled);setChk('watermarkEnabled',cfg.overlays?.logoWatermark?.enabled);
+  const capCfg=cfg.overlays?.captions;setChk('captionsEnabled',capCfg===true?true:capCfg===false?false:(capCfg?.enabled??true));
+  if(capCfg&&typeof capCfg==='object'){setVal('capPosition',capCfg.position);setVal('capColor',capCfg.color);if(capCfg.size!=null)setVal('capSize',capCfg.size);setChk('capBackground',capCfg.background!==false);}
+  const tc=cfg.visual?.titleColor;setChk('titleColorOn',!!tc);if(tc)setVal('titleColor',tc);
+  const ac=cfg.visual?.accentColor;setChk('accentColorOn',!!ac);if(ac)setVal('accentColor',ac);
+  setVal('colorGrade',cfg.overlays?.colorGrade?.preset);
+  const fx=cfg.overlays?.effects||{};
+  if(fx.intensity!=null)setVal('fxIntensity',fx.intensity);
+  setChk('fxGlow',fx.glow);setChk('fxBloom',fx.bloom);setChk('fxScanlines',fx.scanlines);setChk('fxLightLeaks',fx.lightLeaks);setChk('fxLightRays',fx.lightRays);setChk('fxBokeh',fx.bokeh);setChk('fxVhs',fx.vhs);setChk('fxDust',fx.dust);
+  setChk('fxColorWash',fx.colorWash?.enabled);setVal('fxWashColor',fx.colorWash?.color);setChk('fxLetterbox',fx.letterbox?.enabled);setVal('fxLetterboxRatio',fx.letterbox?.ratio);
+  setChk('voiceoverEnabled',cfg.audio?.voiceover?.enabled);setVal('voice',cfg.audio?.voiceover?.voice);setVal('voiceRate',cfg.audio?.voiceover?.rate);
+  setChk('musicEnabled',cfg.audio?.music?.enabled);if(cfg.audio?.music?.volume!=null)setVal('musicVolume',cfg.audio.music.volume);setChk('sfxEnabled',cfg.audio?.sfx?.enabled);
+  const mf=cfg.audio?.music?.customFile;document.getElementById('musicCustomFile').value=mf||'';document.getElementById('musicPreview').innerHTML=mf?'<div class="file-pill">🎵 '+esc(mf.split('/').pop())+'</div>':'';
+  const bgi=cfg.visual?.backgroundImage;document.getElementById('bgImage').value=bgi||'';document.getElementById('bgPreview').innerHTML=bgi?'<div class="file-pill">🖼 '+esc(bgi.split('/').pop())+'</div>':'';
+  scenes=(cfg.scenes||[]).map(configSceneToForm);selectedSceneIdx=0;
+  syncControls();renderScenes();
+}
+async function editProject(name){
+  let cfg=projectConfigs[name];
+  if(!cfg){try{cfg=await(await fetch(API+'/api/projects/'+encodeURIComponent(name)+'/config')).json();}catch{toast('לא ניתן לטעון','err');return;}}
+  setFormFromConfig(cfg);
+  editingProject=name;document.getElementById('editingName').textContent=name;document.getElementById('editPill').classList.add('show');
+  document.getElementById('generateBtn').textContent='עדכן וידאו';showTabByName('scenes');
+}
+function newVideo(){editingProject=null;document.getElementById('editPill').classList.remove('show');document.getElementById('generateBtn').textContent='צור וידאו';document.getElementById('projectName').value='';}
 
-// ============================================
-// Voice preview
-// ============================================
-async function previewVoice() {
-  const voice = document.getElementById('voice').value;
-  const rate = document.getElementById('voiceRate').value;
-  const btn = event.target;
-  btn.disabled = true; btn.textContent = '...';
-  try {
-    const r = await (await fetch(`${API}/api/preview-voice`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({voice, rate, text:'Hello, this is a preview of how this voice sounds. Welcome to Studio Eylon.'}) })).json();
-    if (r.url) { const a = document.getElementById('voicePreviewAudio'); a.src = r.url; a.play(); }
-  } catch(e) { console.error(e); }
-  btn.disabled = false; btn.textContent = '\u25B6';
+// ============== Studio ==============
+async function openStudio(name,btn){
+  const win=window.open('','_blank');
+  if(win)win.document.write('<title>Remotion Studio</title><body style="background:#0B1020;color:#e2e8f0;font-family:sans-serif;display:flex;height:100vh;align-items:center;justify-content:center;margin:0"><div style="text-align:center"><div style="font-size:32px;margin-bottom:12px">🎬</div><div>מפעיל את Remotion Studio…</div><div style="color:#64748b;font-size:13px;margin-top:8px">כמה שניות בפעם הראשונה</div></div></body>');
+  const orig=btn.innerHTML;btn.disabled=true;btn.innerHTML='…';
+  try{
+    const r=await(await fetch(API+'/api/projects/'+encodeURIComponent(name)+'/studio',{method:'POST'})).json();
+    if(r.url){if(win)win.location.href=r.url;else if(confirm('Studio מוכן. לפתוח?\n'+r.url))window.open(r.url,'_blank');}
+    else{if(win)win.close();toast('Studio נכשל','err');}
+  }catch(err){if(win)win.close();toast('Studio נכשל','err');}
+  finally{btn.disabled=false;btn.innerHTML=orig;}
 }
 
-// Init
+// ============== Player ==============
+function openPlayer(url){const o=document.getElementById('playerOverlay'),v=document.getElementById('overlayVideo');v.src=url;v.play();document.getElementById('overlayDownload').href=url;o.classList.add('open');}
+function closePlayer(){document.getElementById('overlayVideo').pause();document.getElementById('playerOverlay').classList.remove('open');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer();});
+
+// ============== Voice preview ==============
+async function previewVoice(btn){
+  const voice=document.getElementById('voice').value,rate=document.getElementById('voiceRate').value;
+  btn.disabled=true;btn.textContent='…';toast('יוצר תצוגת קול...',null,true);
+  try{
+    const r=await(await fetch(API+'/api/preview-voice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({voice,rate,text:voice.startsWith('he-')?'שלום, זוהי דוגמה לקול הזה. ברוכים הבאים ל-Studio Eylon.':'Hello, this is a preview of this voice. Welcome to Studio Eylon.'})})).json();
+    if(r.url){const a=document.getElementById('voicePreviewAudio');a.src=r.url;a.onerror=()=>toast('לא ניתן לנגן את הקובץ','err');a.play().then(()=>toast('משמיע','ok')).catch(()=>toast('לחץ שוב כדי לנגן','err'));}
+    else toast(r.error||'יצירת הקול נכשלה','err');
+  }catch(e){toast('יצירת הקול נכשלה','err');}
+  btn.disabled=false;btn.innerHTML='&#9654;';
+}
+
+// ============== Toast ==============
+let toastTimer=null;
+function toast(msg,kind,loading){
+  const t=document.getElementById('toast'),tx=document.getElementById('toastText'),sp=document.getElementById('toastSpin');
+  tx.textContent=msg;t.classList.add('show');
+  sp.style.display=loading?'block':'none';
+  tx.className=kind==='ok'?'ok':kind==='err'?'err':'';
+  if(toastTimer)clearTimeout(toastTimer);
+  if(!loading)toastTimer=setTimeout(()=>t.classList.remove('show'),kind==='err'?5000:2600);
+}
+
+// Live-update the preview on any form change (native inputs/selects/sliders)
+document.addEventListener('input',e=>{if(e.target.closest('.sheet')||e.target.closest('.inspector'))pushPreview();});
+document.addEventListener('change',e=>{if(e.target.closest('.sheet')||e.target.closest('.inspector'))pushPreview();});
+
+function mountPlayer(){
+  if(window.StudioPreview){window.StudioPreview.mount('#playerMount');pushPreview();}
+  else setTimeout(mountPlayer,150);
+}
+
+// ============== Init ==============
+initControls();
+applyTips();
+renderPresetChips();
+renderMotionPresets();
+addScene('title',{headline:'הכותרת שלך',subheadline:'כותרת משנה כאן',narration:'זה הטקסט שייאמר ויוצג ככתובית.',duration:5});
+selectedSceneIdx=0;renderScenes();
 loadGallery();
+mountPlayer();
 </script>
 </body>
 </html>

@@ -10,6 +10,7 @@
   },
   "scripts": {
     "start": "ts-node tools/server.ts",
+    "build:player": "node tools/build-player.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["video", "remotion", "ai", "rtl", "hebrew"],

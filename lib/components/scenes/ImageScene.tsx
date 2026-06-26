@@ -25,13 +25,27 @@ export const ImageScene: React.FC<SceneProps> = ({ content }) => {
 
   const layout = content.layout || 'contain';
 
-  // Ken Burns effect (slow zoom + pan)
-  const kenBurnsScale = interpolate(frame, [0, 300], [1, 1.08], {
-    extrapolateRight: 'clamp',
-  });
-  const kenBurnsX = interpolate(frame, [0, 300], [0, -15], {
-    extrapolateRight: 'clamp',
-  });
+  // Ken Burns effect (configurable slow zoom + pan)
+  // content.kenBurns: 'zoom-in' | 'zoom-out' | 'pan-left' | 'pan-right' | 'pan-up' | 'pan-down' | 'none'
+  // content.kenBurnsAmount: 0-0.3 (default 0.08)
+  const kb = content.kenBurns || 'zoom-in';
+  const amt = content.kenBurnsAmount ?? 0.08;
+  const t = interpolate(frame, [0, 300], [0, 1], { extrapolateRight: 'clamp' });
+  let kenBurnsScale = 1;
+  let kenBurnsX = 0;
+  let kenBurnsY = 0;
+  const panPx = amt * 180;
+  switch (kb) {
+    case 'zoom-out': kenBurnsScale = 1 + amt - amt * t; break;
+    case 'pan-left': kenBurnsScale = 1 + amt; kenBurnsX = interpolate(t, [0, 1], [panPx, -panPx]); break;
+    case 'pan-right': kenBurnsScale = 1 + amt; kenBurnsX = interpolate(t, [0, 1], [-panPx, panPx]); break;
+    case 'pan-up': kenBurnsScale = 1 + amt; kenBurnsY = interpolate(t, [0, 1], [panPx, -panPx]); break;
+    case 'pan-down': kenBurnsScale = 1 + amt; kenBurnsY = interpolate(t, [0, 1], [-panPx, panPx]); break;
+    case 'none': kenBurnsScale = 1; break;
+    case 'zoom-in':
+    default: kenBurnsScale = 1 + amt * t; break;
+  }
+  const kenBurnsTransform = `scale(${kenBurnsScale}) translate(${kenBurnsX}px, ${kenBurnsY}px)`;
 
   // Fade in
   const opacity = interpolate(frame, [0, 20], [0, 1], {
@@ -58,7 +72,7 @@ export const ImageScene: React.FC<SceneProps> = ({ content }) => {
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                transform: `scale(${kenBurnsScale}) translateX(${kenBurnsX}px)`,
+                transform: kenBurnsTransform,
               }}
             />
           </div>
@@ -127,7 +141,7 @@ export const ImageScene: React.FC<SceneProps> = ({ content }) => {
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                transform: `scale(${kenBurnsScale})`,
+                transform: kenBurnsTransform,
               }}
             />
           )}
@@ -230,7 +244,7 @@ export const ImageScene: React.FC<SceneProps> = ({ content }) => {
                 width: '100%',
                 height: '100%',
                 objectFit: 'contain',
-                transform: `scale(${kenBurnsScale})`,
+                transform: kenBurnsTransform,
               }}
             />
           </div>

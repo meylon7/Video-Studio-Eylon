@@ -159,7 +159,7 @@ print('Generated background-music.wav')
 }
 
 /** Generate synthetic SFX */
-function generateSFX(audioDir: string): void {
+export function generateSFX(audioDir: string): void {
   const python = findPython();
   const outDir = audioDir.replace(/\\/g, '/');
 
